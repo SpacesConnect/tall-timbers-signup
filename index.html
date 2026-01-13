@@ -1,0 +1,463 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Spaces Connect - Tall Timbers Internet Signup</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+</head>
+<body>
+  <div id="root"></div>
+  <script src="https://unpkg.com/react@18/umd/react.production.min.js"></script>
+  <script src="https://unpkg.com/react-dom@18/umd/react-dom.production.min.js"></script>
+  <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
+  <script type="text/babel">
+    function PlanSelector() {
+      const [selectedPlan, setSelectedPlan] = React.useState(null);
+      const [step, setStep] = React.useState(1);
+      const [orderSubmitted, setOrderSubmitted] = React.useState(false);
+      const [isSubmitting, setIsSubmitting] = React.useState(false);
+      const [submitResult, setSubmitResult] = React.useState(null);
+      
+      // Google Form Configuration - Tall Timbers
+      const GOOGLE_FORM_URL = 'https://docs.google.com/forms/d/e/1FAIpQLScp3FRO9DVY8PFwR5KwBr9zIV-uNumSRPpuGTrA5hGEZmW_7Q/formResponse';
+      const FORM_FIELDS = {
+        status: 'entry.849621258',
+        fullName: 'entry.2048927425',
+        address: 'entry.1708502792',
+        email: 'entry.1232180757',
+        phone: 'entry.1024742927',
+        moveInDate: 'entry.288052726',
+        doorCode: 'entry.916841599',
+        plan: 'entry.75256208',
+        routerInfo: 'entry.1674823951'
+      };
+      
+      const [formData, setFormData] = React.useState({
+        fullName: "",
+        address: "",
+        email: "",
+        phone: "",
+        moveInDate: "",
+        doorCode: "",
+        wantsRouter: false,
+      });
+
+      const plans = [
+        {
+          id: "bronze",
+          name: "Bronze",
+          speed: "100",
+          price: 89.95,
+          color: "from-orange-700 to-orange-800",
+          accent: "bg-orange-700",
+          ring: "ring-orange-600",
+          features: ["100 Mbps Download", "100 Mbps Upload", "Unlimited Data", "24/7 VIP Support", "Professional Install"],
+          badge: null,
+          routerPrice: 55,
+        },
+        {
+          id: "silver",
+          name: "Silver",
+          speed: "300",
+          price: 104.95,
+          color: "from-slate-500 to-slate-600",
+          accent: "bg-slate-500",
+          ring: "ring-slate-400",
+          features: ["300 Mbps Download", "300 Mbps Upload", "Unlimited Data", "24/7 VIP Support", "Professional Install"],
+          badge: "Popular",
+          routerPrice: 55,
+        },
+        {
+          id: "gold",
+          name: "Gold",
+          speed: "1000",
+          price: 114.95,
+          color: "from-yellow-500 to-yellow-600",
+          accent: "bg-yellow-500",
+          ring: "ring-yellow-400",
+          features: ["1 Gbps Download", "1 Gbps Upload", "Unlimited Data", "24/7 VIP Support", "Professional Install"],
+          badge: "Best Value",
+          routerPrice: 78,
+        },
+      ];
+
+      const selected = plans.find((p) => p.id === selectedPlan);
+
+      const handleSelect = (planId) => setSelectedPlan(planId);
+
+      const handleContinue = () => {
+        if (selectedPlan && step === 1) setStep(2);
+        else if (step === 2) {
+          if (isFormValid()) setStep(3);
+        } else if (step === 3) {
+          setStep(4);
+        }
+      };
+
+      const handleBack = () => {
+        if (step > 1) setStep(step - 1);
+      };
+
+      const handleInputChange = (e) => {
+        const { name, value, type, checked } = e.target;
+        setFormData((prev) => ({
+          ...prev,
+          [name]: type === "checkbox" ? checked : value,
+        }));
+      };
+
+      const isFormValid = () => formData.fullName && formData.address && formData.email && formData.phone && formData.moveInDate;
+
+      const getRouterInfoForSheet = () => {
+        return formData.wantsRouter ? `Purchase ($${selected.routerPrice})` : 'BYOD';
+      };
+
+      const handleSubmitOrder = () => {
+        setIsSubmitting(true);
+        setSubmitResult(null);
+        
+        const params = new URLSearchParams();
+        params.append(FORM_FIELDS.status, 'NEW');
+        params.append(FORM_FIELDS.fullName, formData.fullName);
+        params.append(FORM_FIELDS.address, formData.address);
+        params.append(FORM_FIELDS.email, formData.email);
+        params.append(FORM_FIELDS.phone, formData.phone);
+        params.append(FORM_FIELDS.moveInDate, formData.moveInDate);
+        params.append(FORM_FIELDS.doorCode, formData.doorCode || '');
+        params.append(FORM_FIELDS.plan, `${selected.name} - ${selected.speed} Mbps - $${selected.price.toFixed(2)}/mo`);
+        params.append(FORM_FIELDS.routerInfo, getRouterInfoForSheet());
+        
+        const iframe = document.createElement('iframe');
+        iframe.name = 'hidden_iframe';
+        iframe.style.display = 'none';
+        document.body.appendChild(iframe);
+        
+        const form = document.createElement('form');
+        form.method = 'POST';
+        form.action = GOOGLE_FORM_URL;
+        form.target = 'hidden_iframe';
+        
+        params.forEach((value, key) => {
+          const input = document.createElement('input');
+          input.type = 'hidden';
+          input.name = key;
+          input.value = value;
+          form.appendChild(input);
+        });
+        
+        document.body.appendChild(form);
+        form.submit();
+        
+        setTimeout(() => {
+          document.body.removeChild(form);
+          document.body.removeChild(iframe);
+          setSubmitResult({ success: true, message: 'Signup submitted successfully' });
+          setOrderSubmitted(true);
+          setIsSubmitting(false);
+        }, 1500);
+      };
+
+      const StepIndicator = ({ currentStep }) => (
+        <div className="flex items-center justify-center gap-4 mb-10">
+          {[{ num: 1, label: "Plan" }, { num: 2, label: "Info" }, { num: 3, label: "Options" }, { num: 4, label: "Confirm" }].map((s, idx) => (
+            <div key={s.num} className="flex items-center gap-2">
+              {idx > 0 && <div className={`w-8 h-0.5 ${s.num <= currentStep ? "bg-emerald-400" : "bg-emerald-700"} -ml-2 mr-2`}></div>}
+              <div className={`w-8 h-8 rounded-full flex items-center justify-center font-semibold text-sm ${s.num <= currentStep ? "bg-emerald-400 text-emerald-900" : "bg-emerald-700 text-emerald-400"}`}>{s.num}</div>
+              <span className="text-emerald-300 text-sm hidden sm:inline">{s.label}</span>
+            </div>
+          ))}
+        </div>
+      );
+
+      // Step 4: Confirmation
+      if (step === 4 && selected) {
+        return (
+          <div className="min-h-screen bg-gradient-to-b from-emerald-900 to-emerald-800 p-6">
+            <div className="max-w-2xl mx-auto">
+              <StepIndicator currentStep={4} />
+
+              <div className="bg-white rounded-2xl shadow-xl p-8">
+                <h2 className="text-2xl font-bold text-gray-800 mb-6 text-center">Order Confirmation</h2>
+                
+                <div className="mb-8 p-5 bg-slate-50 rounded-xl">
+                  <h4 className="font-semibold text-gray-700 mb-3">Order Summary</h4>
+                  <div className="space-y-2 text-sm">
+                    <div className="flex justify-between"><span className="text-slate-500">Name:</span><span className="font-medium text-slate-800">{formData.fullName}</span></div>
+                    <div className="flex justify-between"><span className="text-slate-500">Address:</span><span className="font-medium text-slate-800">{formData.address}</span></div>
+                    <div className="flex justify-between"><span className="text-slate-500">Email:</span><span className="font-medium text-slate-800">{formData.email}</span></div>
+                    <div className="flex justify-between"><span className="text-slate-500">Phone:</span><span className="font-medium text-slate-800">{formData.phone}</span></div>
+                    <div className="flex justify-between"><span className="text-slate-500">Move-in Date:</span><span className="font-medium text-slate-800">{formData.moveInDate}</span></div>
+                    {formData.doorCode && <div className="flex justify-between"><span className="text-slate-500">Door Code:</span><span className="font-medium text-slate-800">{formData.doorCode}</span></div>}
+                    <div className="flex justify-between"><span className="text-slate-500">Plan:</span><span className="font-medium text-slate-800">{selected.name} - {selected.speed} Mbps</span></div>
+                    <div className="flex justify-between"><span className="text-slate-500">Router:</span><span className="font-medium text-slate-800">{formData.wantsRouter ? `Purchase ($${selected.routerPrice})` : "Bring Your Own"}</span></div>
+                  </div>
+                </div>
+
+                <div className="mb-8 border-t pt-6">
+                  <h4 className="font-semibold text-gray-700 mb-4">Pricing</h4>
+                  <div className="space-y-2 text-sm">
+                    <div className="flex justify-between"><span className="text-slate-600">{selected.name} Plan ({selected.speed} Mbps)</span><span>${selected.price.toFixed(2)}</span></div>
+                    <div className="flex justify-between pt-3 border-t text-lg font-bold"><span>Monthly Total</span><span className="text-emerald-600">${selected.price.toFixed(2)}/mo</span></div>
+                  </div>
+                  
+                  {formData.wantsRouter && (
+                    <div className="mt-4 pt-4 border-t">
+                      <h4 className="font-semibold text-gray-700 mb-2">One-Time Charges</h4>
+                      <div className="space-y-2 text-sm">
+                        <div className="flex justify-between"><span className="text-slate-600">Router Purchase</span><span>${selected.routerPrice.toFixed(2)}</span></div>
+                        <div className="flex justify-between pt-2 border-t font-bold"><span>One-Time Total</span><span className="text-orange-600">${selected.routerPrice.toFixed(2)}</span></div>
+                      </div>
+                    </div>
+                  )}
+                </div>
+
+                {!orderSubmitted ? (
+                  <div className="flex gap-4">
+                    <button onClick={handleBack} disabled={isSubmitting} className="flex-1 px-6 py-4 border-2 border-slate-300 text-slate-600 rounded-xl font-semibold hover:bg-slate-50 transition-colors disabled:opacity-50">← Back</button>
+                    <button onClick={handleSubmitOrder} disabled={isSubmitting} className={`flex-1 px-6 py-4 bg-gradient-to-r ${selected.color} text-white rounded-xl font-semibold hover:opacity-90 transition-opacity shadow-lg disabled:opacity-70 flex items-center justify-center gap-2`}>
+                      {isSubmitting ? (
+                        <>
+                          <svg className="animate-spin h-5 w-5 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24"><circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle><path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path></svg>
+                          Submitting...
+                        </>
+                      ) : 'Submit Order ✓'}
+                    </button>
+                  </div>
+                ) : (
+                  <div className="space-y-6">
+                    {submitResult?.success ? (
+                      <div className="bg-green-50 border border-green-200 rounded-xl p-6 text-center">
+                        <div className="w-16 h-16 bg-green-500 rounded-full flex items-center justify-center mx-auto mb-4">
+                          <svg className="w-8 h-8 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" /></svg>
+                        </div>
+                        <h3 className="text-xl font-bold text-green-800">Thank You!</h3>
+                        <p className="text-green-600 mt-2">Your internet service signup has been submitted successfully.</p>
+                        <div className="mt-4 p-3 bg-green-100 rounded-lg inline-block">
+                          <p className="text-sm text-green-700"><strong>Name:</strong> {formData.fullName}</p>
+                          <p className="text-sm text-green-700"><strong>Plan:</strong> {selected.name} - ${selected.price.toFixed(2)}/month</p>
+                        </div>
+                        <p className="text-green-600 text-sm mt-4">You will receive a confirmation email at <strong>{formData.email}</strong></p>
+                      </div>
+                    ) : (
+                      <div className="bg-red-50 border border-red-200 rounded-xl p-6 text-center">
+                        <div className="w-16 h-16 bg-red-500 rounded-full flex items-center justify-center mx-auto mb-4">
+                          <svg className="w-8 h-8 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" /></svg>
+                        </div>
+                        <h3 className="text-xl font-bold text-red-800">Submission Error</h3>
+                        <p className="text-red-600 mt-2">There was a problem submitting your order. Please try again or contact support.</p>
+                        <button onClick={() => { setOrderSubmitted(false); setSubmitResult(null); }} className="mt-4 px-6 py-2 bg-red-600 text-white rounded-lg font-semibold hover:bg-red-700 transition-colors">Try Again</button>
+                      </div>
+                    )}
+                    {submitResult?.success && (
+                      <>
+                        <div className="bg-slate-50 rounded-xl p-4 text-center"><p className="text-slate-600 text-sm">Questions? Contact us at <strong>sales@spacesbroadband.com</strong></p></div>
+                        <button onClick={() => { setStep(1); setSelectedPlan(null); setOrderSubmitted(false); setSubmitResult(null); setFormData({ fullName: "", address: "", email: "", phone: "", moveInDate: "", doorCode: "", wantsRouter: false }); }} className="w-full px-6 py-4 border-2 border-slate-300 text-slate-600 rounded-xl font-semibold hover:bg-slate-50 transition-colors">Start New Signup</button>
+                      </>
+                    )}
+                  </div>
+                )}
+              </div>
+            </div>
+          </div>
+        );
+      }
+
+      // Step 3: Options (Router Only)
+      if (step === 3 && selected) {
+        return (
+          <div className="min-h-screen bg-gradient-to-b from-emerald-900 to-emerald-800 p-6">
+            <div className="max-w-2xl mx-auto">
+              <StepIndicator currentStep={3} />
+
+              <div className="bg-white rounded-2xl shadow-xl p-8">
+                <h2 className="text-2xl font-bold text-gray-800 mb-2">Service Options</h2>
+                <p className="text-slate-500 mb-6">Customize your service</p>
+
+                {/* Router Option */}
+                <div className="mb-8">
+                  <h4 className="font-semibold text-gray-700 mb-4 flex items-center gap-2">
+                    <svg className="w-5 h-5 text-emerald-500" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8.111 16.404a5.5 5.5 0 017.778 0M12 20h.01m-7.08-7.071c3.904-3.905 10.236-3.905 14.14 0M1.394 9.393c5.857-5.857 15.355-5.857 21.213 0" /></svg>
+                    Router Option
+                  </h4>
+                  <div className="space-y-4">
+                    {/* BYOD Option */}
+                    <label className={`relative flex flex-col p-5 border-2 rounded-xl cursor-pointer transition-all ${!formData.wantsRouter ? "border-emerald-500 bg-emerald-50" : "border-gray-200 hover:border-gray-300"}`}>
+                      <input type="radio" name="wantsRouter" checked={!formData.wantsRouter} onChange={() => setFormData(prev => ({ ...prev, wantsRouter: false }))} className="sr-only" />
+                      <div className="flex items-center justify-between mb-2">
+                        <div className="font-semibold text-gray-800">Bring Your Own Device</div>
+                        {!formData.wantsRouter && (
+                          <div className="w-5 h-5 bg-emerald-500 rounded-full flex items-center justify-center"><svg className="w-3 h-3 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={3} d="M5 13l4 4L19 7" /></svg></div>
+                        )}
+                      </div>
+                      <div className="text-sm text-green-600 font-semibold mb-2">No charge</div>
+                      <div className="text-sm text-slate-600">Use your own compatible router</div>
+                    </label>
+
+                    {/* Purchase Option */}
+                    <label className={`relative flex flex-col p-5 border-2 rounded-xl cursor-pointer transition-all ${formData.wantsRouter ? "border-emerald-500 bg-emerald-50" : "border-gray-200 hover:border-gray-300"}`}>
+                      <input type="radio" name="wantsRouter" checked={formData.wantsRouter} onChange={() => setFormData(prev => ({ ...prev, wantsRouter: true }))} className="sr-only" />
+                      <div className="flex items-center justify-between mb-2">
+                        <div className="font-semibold text-gray-800">Purchase Router</div>
+                        {formData.wantsRouter && (
+                          <div className="w-5 h-5 bg-emerald-500 rounded-full flex items-center justify-center"><svg className="w-3 h-3 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={3} d="M5 13l4 4L19 7" /></svg></div>
+                        )}
+                      </div>
+                      <div className="text-sm text-emerald-600 font-medium mb-2">${selected.routerPrice.toFixed(2)} one-time</div>
+                      <div className="text-sm text-slate-600">High-performance Wi-Fi router optimized for your plan</div>
+                    </label>
+                  </div>
+                </div>
+
+                {/* Price Summary */}
+                <div className="bg-slate-50 rounded-xl p-5 mb-6">
+                  <div className="flex justify-between items-center">
+                    <div>
+                      <div className="text-sm text-slate-500">Monthly Total</div>
+                      <div className="text-2xl font-bold text-slate-800">${selected.price.toFixed(2)}<span className="text-base font-normal text-slate-500">/mo</span></div>
+                      <div className="text-sm text-slate-500 mt-1">{selected.name} plan ({selected.speed} Mbps)</div>
+                    </div>
+                    {formData.wantsRouter && (
+                      <div className="text-right">
+                        <div className="text-sm text-slate-500">One-Time</div>
+                        <div className="text-xl font-bold text-orange-600">${selected.routerPrice.toFixed(2)}</div>
+                      </div>
+                    )}
+                  </div>
+                </div>
+
+                <div className="flex gap-4">
+                  <button onClick={handleBack} className="flex-1 px-6 py-4 border-2 border-slate-300 text-slate-600 rounded-xl font-semibold hover:bg-slate-50 transition-colors">← Back</button>
+                  <button onClick={handleContinue} className={`flex-1 px-6 py-4 bg-gradient-to-r ${selected.color} text-white rounded-xl font-semibold hover:opacity-90 transition-opacity shadow-lg`}>Review Order →</button>
+                </div>
+              </div>
+            </div>
+          </div>
+        );
+      }
+
+      // Step 2: Customer Information
+      if (step === 2 && selected) {
+        return (
+          <div className="min-h-screen bg-gradient-to-b from-emerald-900 to-emerald-800 p-6">
+            <div className="max-w-2xl mx-auto">
+              <StepIndicator currentStep={2} />
+
+              <div className="bg-white rounded-2xl shadow-xl p-8">
+                <h2 className="text-2xl font-bold text-gray-800 mb-2">Customer Information</h2>
+                <p className="text-slate-500 mb-6">Tell us about yourself</p>
+
+                <div className="space-y-6">
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                    <div>
+                      <label className="block text-sm font-medium text-gray-700 mb-2">Full Name *</label>
+                      <input type="text" name="fullName" value={formData.fullName} onChange={handleInputChange} className="w-full px-4 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-emerald-500 focus:border-transparent" placeholder="John Smith" />
+                    </div>
+                    <div>
+                      <label className="block text-sm font-medium text-gray-700 mb-2">Address *</label>
+                      <input type="text" name="address" value={formData.address} onChange={handleInputChange} className="w-full px-4 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-emerald-500 focus:border-transparent" placeholder="123 Tall Timbers Dr, Unit 101" />
+                    </div>
+                  </div>
+
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                    <div>
+                      <label className="block text-sm font-medium text-gray-700 mb-2">Email Address *</label>
+                      <input type="email" name="email" value={formData.email} onChange={handleInputChange} className="w-full px-4 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-emerald-500 focus:border-transparent" placeholder="your@email.com" />
+                    </div>
+                    <div>
+                      <label className="block text-sm font-medium text-gray-700 mb-2">Phone Number *</label>
+                      <input type="tel" name="phone" value={formData.phone} onChange={handleInputChange} className="w-full px-4 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-emerald-500 focus:border-transparent" placeholder="(555) 123-4567" />
+                    </div>
+                  </div>
+
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                    <div>
+                      <label className="block text-sm font-medium text-gray-700 mb-2">Move-in Date *</label>
+                      <input type="date" name="moveInDate" value={formData.moveInDate} onChange={handleInputChange} className="w-full px-4 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-emerald-500 focus:border-transparent" />
+                    </div>
+                    <div>
+                      <label className="block text-sm font-medium text-gray-700 mb-2">Door Code <span className="text-slate-400 font-normal">(Optional)</span></label>
+                      <input type="text" name="doorCode" value={formData.doorCode} onChange={handleInputChange} className="w-full px-4 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-emerald-500 focus:border-transparent" placeholder="e.g. 1234" />
+                      <p className="text-xs text-slate-500 mt-1">Providing your door code helps us complete your installation faster.</p>
+                    </div>
+                  </div>
+                </div>
+
+                <div className="mt-8 bg-slate-50 rounded-xl p-5">
+                  <div className="flex items-center justify-between">
+                    <div>
+                      <div className="text-lg font-bold text-slate-800">{selected.name} Plan</div>
+                      <div className="text-slate-500">{selected.speed} Mbps</div>
+                    </div>
+                    <div className="text-right">
+                      <div className="text-2xl font-bold text-emerald-600">${selected.price.toFixed(2)}</div>
+                      <div className="text-slate-500 text-sm">/month</div>
+                    </div>
+                  </div>
+                </div>
+
+                <div className="flex gap-4 mt-8">
+                  <button onClick={handleBack} className="flex-1 px-6 py-4 border-2 border-slate-300 text-slate-600 rounded-xl font-semibold hover:bg-slate-50 transition-colors">← Back</button>
+                  <button onClick={handleContinue} disabled={!isFormValid()} className={`flex-1 px-6 py-4 bg-gradient-to-r ${selected.color} text-white rounded-xl font-semibold transition-all ${isFormValid() ? "hover:opacity-90 shadow-lg" : "opacity-50 cursor-not-allowed"}`}>Continue →</button>
+                </div>
+              </div>
+            </div>
+          </div>
+        );
+      }
+
+      // Step 1: Plan Selection
+      return (
+        <div className="min-h-screen bg-gradient-to-b from-emerald-900 to-emerald-800 p-6">
+          <div className="max-w-5xl mx-auto">
+            <div className="text-center mb-10">
+              <h1 className="text-4xl font-bold text-white mb-3">Choose Your Plan</h1>
+              <p className="text-emerald-200 text-lg">Lightning-fast fiber internet at Tall Timbers</p>
+            </div>
+
+            <StepIndicator currentStep={1} />
+
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-10">
+              {plans.map((plan) => (
+                <div key={plan.id} onClick={() => handleSelect(plan.id)} className={`relative bg-white rounded-2xl shadow-lg overflow-hidden cursor-pointer transition-all duration-300 ${selectedPlan === plan.id ? `ring-4 ${plan.ring} scale-105` : "hover:scale-102 hover:shadow-xl"}`}>
+                  {plan.badge && <div className={`absolute top-0 right-0 ${plan.accent} text-white px-4 py-1 text-sm font-bold rounded-bl-xl`}>{plan.badge}</div>}
+                  <div className={`bg-gradient-to-r ${plan.color} p-6 text-white`}>
+                    <h3 className="text-2xl font-bold mb-1">{plan.name}</h3>
+                    <div className="flex items-baseline gap-1">
+                      <span className="text-4xl font-bold">${plan.price.toFixed(2)}</span>
+                      <span className="text-white/80">/mo</span>
+                    </div>
+                    <div className="mt-2 text-white/90">{plan.speed} Mbps</div>
+                  </div>
+                  <div className="p-6">
+                    <ul className="space-y-3">
+                      {plan.features.map((feature, idx) => (
+                        <li key={idx} className="flex items-center gap-2 text-slate-600">
+                          <svg className="w-5 h-5 text-green-500 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" /></svg>
+                          {feature}
+                        </li>
+                      ))}
+                    </ul>
+                    <div className={`mt-6 py-3 px-4 rounded-xl text-center font-semibold transition-all ${selectedPlan === plan.id ? `bg-gradient-to-r ${plan.color} text-white` : "bg-slate-100 text-slate-600 hover:bg-slate-200"}`}>{selectedPlan === plan.id ? "✓ Selected" : "Select Plan"}</div>
+                  </div>
+                </div>
+              ))}
+            </div>
+
+            <div className="flex justify-center">
+              <button onClick={handleContinue} disabled={!selectedPlan} className={`px-12 py-4 rounded-xl font-semibold text-lg transition-all ${selectedPlan ? "bg-emerald-500 text-white hover:bg-emerald-600 shadow-lg hover:shadow-xl" : "bg-emerald-800 text-emerald-500 cursor-not-allowed"}`}>{selectedPlan ? "Continue →" : "Select a Plan to Continue"}</button>
+            </div>
+
+            <div className="mt-10 text-center">
+              <p className="text-emerald-300 text-sm">All plans include unlimited data • No hidden fees • 30-day money-back guarantee</p>
+            </div>
+          </div>
+        </div>
+      );
+    }
+
+    const root = ReactDOM.createRoot(document.getElementById('root'));
+    root.render(<PlanSelector />);
+  </script>
+</body>
+</html
