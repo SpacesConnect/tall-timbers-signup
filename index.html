@@ -1,1098 +1,1624 @@
-<!DOCTYPE html>
-<html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Tall Timbers - Spaces Broadband</title>
-    <style>
-        @import url('https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700;800&family=Space+Mono:wght@400;700&display=swap');
-
-        * {
-            margin: 0;
-            padding: 0;
-            box-sizing: border-box;
-        }
-
-        body {
-            background: #0A0A0A;
-            overflow-x: hidden;
-        }
-
-        .site-page {
-            --coral: #C75B4B;
-            --coral-light: #E07A6B;
-            --coral-glow: rgba(199, 91, 75, 0.4);
-            --dark: #0A0A0A;
-            --dark-lighter: #141414;
-            --dark-card: #1A1A1A;
-            --white: #FFFFFF;
-            --gray: #888888;
-            --gray-light: #CCCCCC;
-            --success: #4CAF50;
-            font-family: 'Outfit', sans-serif;
-            background: var(--dark);
-            color: var(--white);
-            line-height: 1.6;
-            position: relative;
-        }
-
-        /* ========== FIBER LINES BACKGROUND ========== */
-        .fiber-bg {
-            position: fixed;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 100%;
-            pointer-events: none;
-            z-index: 0;
-            overflow: hidden;
-        }
-
-        .fiber-bg svg {
-            position: absolute;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 100%;
-        }
-
-        .fiber-line {
-            fill: none;
-            stroke-width: 1.5;
-            stroke-linecap: round;
-            opacity: 0.4;
-        }
-
-        .fiber-line.glow {
-            stroke-width: 4;
-            opacity: 0.15;
-        }
-
-        .fiber-line.c1 { stroke: var(--coral); }
-        .fiber-line.c2 { stroke: var(--coral-light); }
-        .fiber-line.c3 { stroke: rgba(199, 91, 75, 0.8); }
-
-        .fiber-light {
-            fill: none;
-            stroke: var(--coral-light);
-            stroke-width: 3;
-            stroke-linecap: round;
-            stroke-dasharray: 50 2000;
-            opacity: 0;
-        }
-
-        @keyframes fiberFlow1 {
-            0% { stroke-dashoffset: 2050; opacity: 0; }
-            5% { opacity: 0.8; }
-            95% { opacity: 0.8; }
-            100% { stroke-dashoffset: 0; opacity: 0; }
-        }
-
-        .fiber-light.l1 { animation: fiberFlow1 12s linear infinite; }
-        .fiber-light.l2 { animation: fiberFlow1 12s linear infinite 4s; }
-        .fiber-light.l3 { animation: fiberFlow1 12s linear infinite 8s; }
-
-        .sparkles {
-            position: absolute;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 100%;
-        }
-
-        .sparkle {
-            position: absolute;
-            width: 4px;
-            height: 4px;
-            background: white;
-            border-radius: 50%;
-            opacity: 0;
-            box-shadow: 0 0 6px 2px white, 0 0 12px 4px var(--coral-light);
-        }
-
-        @keyframes sparkle {
-            0%, 100% { opacity: 0; transform: scale(0); }
-            40% { opacity: 1; transform: scale(1.2); }
-            50% { opacity: 1; transform: scale(1); }
-            60% { opacity: 1; transform: scale(1.2); }
-        }
-
-        .sparkle:nth-child(1) { top: 20%; left: 15%; animation: sparkle 3s ease-in-out infinite 0s; }
-        .sparkle:nth-child(2) { top: 35%; left: 45%; animation: sparkle 2.5s ease-in-out infinite 0.5s; }
-        .sparkle:nth-child(3) { top: 55%; left: 25%; animation: sparkle 3.2s ease-in-out infinite 1s; }
-        .sparkle:nth-child(4) { top: 70%; left: 60%; animation: sparkle 2.8s ease-in-out infinite 1.5s; }
-        .sparkle:nth-child(5) { top: 25%; left: 75%; animation: sparkle 3s ease-in-out infinite 2s; }
-        .sparkle:nth-child(6) { top: 45%; left: 85%; animation: sparkle 2.6s ease-in-out infinite 0.3s; }
-
-        /* ========== NAVIGATION ========== */
-        .site-nav {
-            position: fixed;
-            top: 0;
-            left: 0;
-            width: 100%;
-            padding: 1.5rem 4rem;
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            z-index: 1000;
-            background: linear-gradient(to bottom, rgba(10, 10, 10, 0.95), rgba(10, 10, 10, 0.8));
-            backdrop-filter: blur(10px);
-        }
-
-        .site-nav-logo {
-            display: flex;
-            align-items: center;
-            gap: 0.75rem;
-            text-decoration: none;
-        }
-
-        .site-nav-logo svg {
-            width: 40px;
-            height: 40px;
-        }
-
-        .site-nav-logo-text {
-            font-family: 'Space Mono', monospace;
-            font-size: 1.1rem;
-            font-weight: 700;
-            letter-spacing: 2px;
-            color: var(--white);
-        }
-
-        .site-nav-back {
-            display: flex;
-            align-items: center;
-            gap: 0.5rem;
-            color: var(--gray-light);
-            text-decoration: none;
-            font-size: 0.9rem;
-            transition: color 0.3s ease;
-        }
-
-        .site-nav-back:hover {
-            color: var(--coral);
-        }
-
-        .site-nav-back svg {
-            width: 20px;
-            height: 20px;
-        }
-
-        /* ========== HERO SECTION ========== */
-        .site-hero {
-            position: relative;
-            z-index: 2;
-            min-height: 60vh;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            text-align: center;
-            padding: 8rem 2rem 4rem;
-        }
-
-        .site-hero-content {
-            max-width: 800px;
-        }
-
-        .site-hero-tag {
-            display: inline-block;
-            color: var(--coral);
-            font-family: 'Space Mono', monospace;
-            font-size: 0.85rem;
-            letter-spacing: 2px;
-            margin-bottom: 1rem;
-        }
-
-        .site-hero h1 {
-            font-size: clamp(3rem, 8vw, 5rem);
-            font-weight: 800;
-            line-height: 1.1;
-            margin-bottom: 1.5rem;
-            letter-spacing: -2px;
-        }
-
-        .site-hero h1 span {
-            color: var(--coral);
-        }
-
-        .site-hero-description {
-            font-size: 1.25rem;
-            color: var(--gray);
-            max-width: 600px;
-            margin: 0 auto;
-        }
-
-        /* ========== PLANS SECTION ========== */
-        .site-plans {
-            position: relative;
-            z-index: 2;
-            padding: 6rem 4rem;
-        }
-
-        .section-header {
-            text-align: center;
-            margin-bottom: 4rem;
-        }
-
-        .section-tag {
-            display: inline-block;
-            color: var(--coral);
-            font-family: 'Space Mono', monospace;
-            font-size: 0.85rem;
-            letter-spacing: 2px;
-            margin-bottom: 1rem;
-        }
-
-        .section-title {
-            font-size: clamp(2rem, 4vw, 3rem);
-            font-weight: 700;
-        }
-
-        .section-subtitle {
-            color: var(--gray);
-            margin-top: 1rem;
-            font-size: 1.1rem;
-        }
-
-        .plans-grid {
-            display: grid;
-            grid-template-columns: repeat(3, 1fr);
-            gap: 1.5rem;
-            max-width: 1000px;
-            margin: 0 auto;
-        }
-
-        .plan-card {
-            background: rgba(26, 26, 26, 0.95);
-            border: 1px solid rgba(255,255,255,0.05);
-            border-radius: 20px;
-            padding: 2rem;
-            position: relative;
-            transition: all 0.4s ease;
-        }
-
-        .plan-card:hover {
-            border-color: rgba(199, 91, 75, 0.3);
-            transform: translateY(-5px);
-        }
-
-        .plan-card.featured {
-            border-color: var(--coral);
-            background: linear-gradient(135deg, rgba(26, 26, 26, 0.95), rgba(199, 91, 75, 0.1));
-        }
-
-        .plan-card.featured::before {
-            content: 'POPULAR';
-            position: absolute;
-            top: -12px;
-            left: 50%;
-            transform: translateX(-50%);
-            background: var(--coral);
-            color: var(--white);
-            font-size: 0.7rem;
-            font-weight: 700;
-            letter-spacing: 1px;
-            padding: 0.4rem 1rem;
-            border-radius: 20px;
-        }
-
-        .plan-card.best-value {
-            border-color: #F59E0B;
-            background: linear-gradient(135deg, rgba(26, 26, 26, 0.95), rgba(245, 158, 11, 0.1));
-        }
-
-        .plan-card.best-value::before {
-            content: 'BEST VALUE';
-            position: absolute;
-            top: -12px;
-            left: 50%;
-            transform: translateX(-50%);
-            background: #F59E0B;
-            color: var(--dark);
-            font-size: 0.7rem;
-            font-weight: 700;
-            letter-spacing: 1px;
-            padding: 0.4rem 1rem;
-            border-radius: 20px;
-        }
-
-        .plan-card.best-value:hover {
-            border-color: #F59E0B;
-        }
-
-        .plan-card.best-value .plan-cta {
-            background: transparent;
-            border: 2px solid #F59E0B;
-            color: #F59E0B;
-        }
-
-        .plan-card.best-value .plan-cta:hover {
-            background: #F59E0B;
-            color: var(--dark);
-        }
-
-        .plans-note {
-            text-align: center;
-            color: var(--gray);
-            font-size: 0.9rem;
-            margin-top: 3rem;
-        }
-
-        .plan-name {
-            font-size: 1.4rem;
-            font-weight: 700;
-            margin-bottom: 0.25rem;
-        }
-
-        .plan-speed {
-            color: var(--coral);
-            font-family: 'Space Mono', monospace;
-            font-size: 0.85rem;
-            margin-bottom: 1.25rem;
-        }
-
-        .plan-price {
-            display: flex;
-            align-items: baseline;
-            gap: 0.25rem;
-            margin-bottom: 1.5rem;
-        }
-
-        .plan-price-currency {
-            font-size: 1.25rem;
-            font-weight: 600;
-            color: var(--gray);
-        }
-
-        .plan-price-amount {
-            font-size: 3rem;
-            font-weight: 800;
-            line-height: 1;
-        }
-
-        .plan-price-period {
-            font-size: 1rem;
-            color: var(--gray);
-        }
-
-        .plan-features {
-            list-style: none;
-            margin-bottom: 1.5rem;
-        }
-
-        .plan-features li {
-            display: flex;
-            align-items: center;
-            gap: 0.6rem;
-            padding: 0.5rem 0;
-            color: var(--gray-light);
-            font-size: 0.9rem;
-            border-bottom: 1px solid rgba(255,255,255,0.05);
-        }
-
-        .plan-features li:last-child {
-            border-bottom: none;
-        }
-
-        .plan-features li svg {
-            width: 18px;
-            height: 18px;
-            color: var(--success);
-            flex-shrink: 0;
-        }
-
-        .plan-cta {
-            display: block;
-            width: 100%;
-            padding: 1rem;
-            border-radius: 8px;
-            text-align: center;
-            text-decoration: none;
-            font-weight: 600;
-            transition: all 0.3s ease;
-            cursor: pointer;
-            border: none;
-            font-family: 'Outfit', sans-serif;
-            font-size: 1rem;
-        }
-
-        .plan-card:not(.featured):not(.best-value) .plan-cta {
-            background: transparent;
-            border: 2px solid var(--coral);
-            color: var(--coral);
-        }
-
-        .plan-card:not(.featured):not(.best-value) .plan-cta:hover {
-            background: var(--coral);
-            color: var(--white);
-        }
-
-        .plan-card.featured .plan-cta {
-            background: var(--coral);
-            color: var(--white);
-        }
-
-        .plan-card.featured .plan-cta:hover {
-            background: var(--coral-light);
-        }
-
-        /* ========== FEATURES SECTION ========== */
-        .site-features {
-            position: relative;
-            z-index: 2;
-            padding: 6rem 4rem;
-            background: rgba(20, 20, 20, 0.8);
-        }
-
-        .features-grid {
-            display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
-            gap: 2rem;
-            max-width: 1200px;
-            margin: 0 auto;
-        }
-
-        .feature-item {
-            text-align: center;
-            padding: 2rem;
-        }
-
-        .feature-icon {
-            width: 64px;
-            height: 64px;
-            background: rgba(199, 91, 75, 0.1);
-            border-radius: 16px;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            margin: 0 auto 1.5rem;
-        }
-
-        .feature-icon svg {
-            width: 32px;
-            height: 32px;
-            stroke: var(--coral);
-        }
-
-        .feature-title {
-            font-size: 1.25rem;
-            font-weight: 600;
-            margin-bottom: 0.75rem;
-        }
-
-        .feature-description {
-            color: var(--gray);
-            font-size: 0.95rem;
-        }
-
-        /* ========== FOOTER ========== */
-        .site-footer {
-            position: relative;
-            z-index: 2;
-            padding: 3rem 4rem;
-            background: var(--dark);
-            border-top: 1px solid rgba(255,255,255,0.05);
-            text-align: center;
-        }
-
-        .footer-text {
-            color: var(--gray);
-            font-size: 0.9rem;
-        }
-
-        .footer-text a {
-            color: var(--coral);
-            text-decoration: none;
-        }
-
-        .footer-text a:hover {
-            text-decoration: underline;
-        }
-
-        /* ========== RESPONSIVE ========== */
-        @media (max-width: 1024px) {
-            .site-nav {
-                padding: 1rem 2rem;
-            }
-
-            .site-plans,
-            .site-features {
-                padding: 4rem 2rem;
-            }
-
-            .plans-grid {
-                grid-template-columns: repeat(3, 1fr);
-                gap: 1rem;
-            }
-        }
-
-        @media (max-width: 768px) {
-            .site-hero {
-                padding: 7rem 1.5rem 3rem;
-            }
-
-            .plans-grid {
-                grid-template-columns: 1fr;
-                max-width: 400px;
-            }
-        }
-
-        /* ========== SIGNUP MODAL STYLES ========== */
-        .signup-modal-overlay {
-            position: fixed;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 100%;
-            background: rgba(0, 0, 0, 0.9);
-            z-index: 10000;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            padding: 1rem;
-            overflow-y: auto;
-        }
-
-        .signup-modal-container {
-            width: 100%;
-            max-width: 640px;
-            max-height: 90vh;
-            overflow-y: auto;
-            position: relative;
-        }
-
-        .signup-modal-close {
-            position: absolute;
-            top: 1rem;
-            right: 1rem;
-            background: rgba(255,255,255,0.1);
-            border: none;
-            color: #FFFFFF;
-            width: 40px;
-            height: 40px;
-            border-radius: 50%;
-            font-size: 1.5rem;
-            cursor: pointer;
-            z-index: 10;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            transition: background 0.3s ease;
-        }
-
-        .signup-modal-close:hover {
-            background: rgba(199, 91, 75, 0.5);
-        }
-    </style>
-</head>
-<body>
-<div class="site-page">
-    <!-- Fiber Lines Background -->
-    <div class="fiber-bg">
-        <svg viewBox="0 0 1920 1080" preserveAspectRatio="xMidYMid slice">
-            <path class="fiber-line glow c1" d="M-100,900 Q400,850 600,700 T1000,500 T1400,350 T1800,200 T2100,50"></path>
-            <path class="fiber-line c1" d="M-100,900 Q400,850 600,700 T1000,500 T1400,350 T1800,200 T2100,50"></path>
-            <path class="fiber-line glow c2" d="M-100,950 Q350,900 550,750 T950,550 T1350,400 T1750,250 T2100,100"></path>
-            <path class="fiber-line c2" d="M-100,950 Q350,900 550,750 T950,550 T1350,400 T1750,250 T2100,100"></path>
-            <path class="fiber-line glow c3" d="M-100,1000 Q300,950 500,800 T900,600 T1300,450 T1700,300 T2100,150"></path>
-            <path class="fiber-line c3" d="M-100,1000 Q300,950 500,800 T900,600 T1300,450 T1700,300 T2100,150"></path>
-            <path class="fiber-line glow c1" d="M-100,1050 Q250,1000 450,850 T850,650 T1250,500 T1650,350 T2100,200"></path>
-            <path class="fiber-line c1" d="M-100,1050 Q250,1000 450,850 T850,650 T1250,500 T1650,350 T2100,200"></path>
-            <path class="fiber-line glow c2" d="M-100,800 Q500,750 700,600 T1100,400 T1500,250 T1900,100 T2100,-50"></path>
-            <path class="fiber-line c2" d="M-100,800 Q500,750 700,600 T1100,400 T1500,250 T1900,100 T2100,-50"></path>
-            <path class="fiber-light l1" d="M-100,900 Q400,850 600,700 T1000,500 T1400,350 T1800,200 T2100,50"></path>
-            <path class="fiber-light l2" d="M-100,1000 Q300,950 500,800 T900,600 T1300,450 T1700,300 T2100,150"></path>
-            <path class="fiber-light l3" d="M-100,800 Q500,750 700,600 T1100,400 T1500,250 T1900,100 T2100,-50"></path>
-        </svg>
-        <div class="sparkles">
-            <div class="sparkle"></div>
-            <div class="sparkle"></div>
-            <div class="sparkle"></div>
-            <div class="sparkle"></div>
-            <div class="sparkle"></div>
-            <div class="sparkle"></div>
-        </div>
-    </div>
-
-    <!-- Navigation -->
-    <nav class="site-nav">
-        <a href="/" class="site-nav-logo">
-            <svg viewBox="0 0 100 100" fill="none">
-                <circle cx="45" cy="50" r="40" stroke="#C75B4B" stroke-width="4" fill="none"></circle>
-                <path d="M25 65 Q25 50 40 35" stroke="#C75B4B" stroke-width="4" fill="none" stroke-linecap="round"></path>
-                <path d="M20 75 Q20 50 50 25" stroke="#C75B4B" stroke-width="4" fill="none" stroke-linecap="round"></path>
-                <path d="M15 85 Q15 50 60 15" stroke="#C75B4B" stroke-width="4" fill="none" stroke-linecap="round"></path>
-                <circle cx="28" cy="72" r="5" fill="#C75B4B"></circle>
-                <rect x="72" y="18" width="10" height="16" rx="2" fill="#C75B4B" transform="rotate(45 77 26)"></rect>
-                <rect x="68" y="30" width="6" height="10" rx="1" fill="#C75B4B" transform="rotate(45 71 35)"></rect>
-                <line x1="60" y1="40" x2="68" y2="32" stroke="#C75B4B" stroke-width="3" stroke-linecap="round"></line>
-            </svg>
-            <span class="site-nav-logo-text">SPACES BROADBAND</span>
-        </a>
-        <a href="/" class="site-nav-back">
-            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                <path d="M19 12H5M12 19l-7-7 7-7"></path>
-            </svg>
-            Back to Home
-        </a>
-    </nav>
-
-    <!-- Hero Section -->
-    <section class="site-hero">
-        <div class="site-hero-content">
-            <span class="site-hero-tag">// TALL TIMBERS APARTMENTS</span>
-            <h1>High-Speed Internet for <span>Tall Timbers</span></h1>
-            <p class="site-hero-description">Blazing-fast fiber internet designed specifically for Tall Timbers residents. No hidden fees, optional contracts, just reliable connectivity.</p>
-        </div>
-    </section>
-
-    <!-- Plans Section -->
-    <section class="site-plans" id="plans">
-        <div class="section-header">
-            <span class="section-tag">// CHOOSE YOUR PLAN</span>
-            <h2 class="section-title">Internet Plans</h2>
-            <p class="section-subtitle">Simple, transparent pricing with no hidden fees</p>
-        </div>
-        <div class="plans-grid">
-            <!-- Bronze Plan -->
-            <div class="plan-card">
-                <h3 class="plan-name">Bronze</h3>
-                <p class="plan-speed">100 Mbps</p>
-                <div class="plan-price">
-                    <span class="plan-price-currency">$</span>
-                    <span class="plan-price-amount">89</span>
-                    <span class="plan-price-period">.95/mo</span>
-                </div>
-                <ul class="plan-features">
-                    <li><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="20 6 9 17 4 12"></polyline></svg> 100 Mbps Download</li>
-                    <li><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="20 6 9 17 4 12"></polyline></svg> 100 Mbps Upload</li>
-                    <li><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="20 6 9 17 4 12"></polyline></svg> Unlimited Data</li>
-                    <li><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="20 6 9 17 4 12"></polyline></svg> 24/7 VIP Support</li>
-                    <li><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="20 6 9 17 4 12"></polyline></svg> Professional Install</li>
-                </ul>
-                <button onclick="openSignupModal('bronze')" class="plan-cta">Select Plan</button>
-            </div>
-
-            <!-- Silver Plan (Popular) -->
-            <div class="plan-card featured">
-                <h3 class="plan-name">Silver</h3>
-                <p class="plan-speed">300 Mbps</p>
-                <div class="plan-price">
-                    <span class="plan-price-currency">$</span>
-                    <span class="plan-price-amount">104</span>
-                    <span class="plan-price-period">.95/mo</span>
-                </div>
-                <ul class="plan-features">
-                    <li><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="20 6 9 17 4 12"></polyline></svg> 300 Mbps Download</li>
-                    <li><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="20 6 9 17 4 12"></polyline></svg> 300 Mbps Upload</li>
-                    <li><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="20 6 9 17 4 12"></polyline></svg> Unlimited Data</li>
-                    <li><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="20 6 9 17 4 12"></polyline></svg> 24/7 VIP Support</li>
-                    <li><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="20 6 9 17 4 12"></polyline></svg> Professional Install</li>
-                </ul>
-                <button onclick="openSignupModal('silver')" class="plan-cta">Select Plan</button>
-            </div>
-
-            <!-- Gold Plan (Best Value) -->
-            <div class="plan-card best-value">
-                <h3 class="plan-name">Gold</h3>
-                <p class="plan-speed">1 Gbps</p>
-                <div class="plan-price">
-                    <span class="plan-price-currency">$</span>
-                    <span class="plan-price-amount">114</span>
-                    <span class="plan-price-period">.95/mo</span>
-                </div>
-                <ul class="plan-features">
-                    <li><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="20 6 9 17 4 12"></polyline></svg> 1 Gbps Download</li>
-                    <li><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="20 6 9 17 4 12"></polyline></svg> 1 Gbps Upload</li>
-                    <li><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="20 6 9 17 4 12"></polyline></svg> Unlimited Data</li>
-                    <li><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="20 6 9 17 4 12"></polyline></svg> 24/7 VIP Support</li>
-                    <li><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="20 6 9 17 4 12"></polyline></svg> Professional Install</li>
-                </ul>
-                <button onclick="openSignupModal('gold')" class="plan-cta">Select Plan</button>
-            </div>
-        </div>
-        <p class="plans-note">All plans include unlimited data • No hidden fees • 30-day money-back guarantee</p>
-    </section>
-
-    <!-- Features Section -->
-    <section class="site-features">
-        <div class="section-header">
-            <span class="section-tag">// WHAT'S INCLUDED</span>
-            <h2 class="section-title">Every Plan Includes</h2>
-        </div>
-        <div class="features-grid">
-            <div class="feature-item">
-                <div class="feature-icon">
-                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                        <path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"></path>
-                        <polyline points="22 4 12 14.01 9 11.01"></polyline>
-                    </svg>
-                </div>
-                <h3 class="feature-title">Unlimited Data</h3>
-                <p class="feature-description">No data caps or throttling. Stream, game, and work without limits.</p>
-            </div>
-            <div class="feature-item">
-                <div class="feature-icon">
-                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                        <path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07 19.5 19.5 0 0 1-6-6 19.79 19.79 0 0 1-3.07-8.67A2 2 0 0 1 4.11 2h3a2 2 0 0 1 2 1.72 12.84 12.84 0 0 0 .7 2.81 2 2 0 0 1-.45 2.11L8.09 9.91a16 16 0 0 0 6 6l1.27-1.27a2 2 0 0 1 2.11-.45 12.84 12.84 0 0 0 2.81.7A2 2 0 0 1 22 16.92z"></path>
-                    </svg>
-                </div>
-                <h3 class="feature-title">24/7 VIP Support</h3>
-                <p class="feature-description">Real humans ready to help whenever you need it, day or night.</p>
-            </div>
-            <div class="feature-item">
-                <div class="feature-icon">
-                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                        <path d="M14.7 6.3a1 1 0 0 0 0 1.4l1.6 1.6a1 1 0 0 0 1.4 0l3.77-3.77a6 6 0 0 1-7.94 7.94l-6.91 6.91a2.12 2.12 0 0 1-3-3l6.91-6.91a6 6 0 0 1 7.94-7.94l-3.76 3.76z"></path>
-                    </svg>
-                </div>
-                <h3 class="feature-title">Professional Install</h3>
-                <p class="feature-description">Your service will be activated and ready when you move in.</p>
-            </div>
-        </div>
-    </section>
-
-    <!-- Footer -->
-    <footer class="site-footer">
-        <p class="footer-text">© 2026 Spaces Broadband. <a href="/pages/contact">Contact Us</a> | <a href="/pages/troubleshoot">Troubleshoot</a></p>
-    </footer>
+{% comment %}
+  Tall Timbers Internet Signup Form
+  Shopify Liquid Template
+{% endcomment %}
+
+<style>
+/* Base Reset & Fonts */
+@import url('https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700;800&family=Space+Mono:wght@400;700&display=swap');
+
+.tt-signup-page {
+  --coral: #C75B4B;
+  --coral-light: #E07A6B;
+  --amber: #F59E0B;
+  --dark: #0A0A0A;
+  --dark-card: rgba(26, 26, 26, 0.95);
+  --white: #FFFFFF;
+  --gray: #888888;
+  --gray-light: #CCCCCC;
+  --success: #4CAF50;
+  --info: #3B82F6;
+  
+  font-family: 'Outfit', sans-serif;
+  background: var(--dark);
+  min-height: 100vh;
+  padding: 2rem 1rem;
+  box-sizing: border-box;
+}
+
+.tt-signup-page *, 
+.tt-signup-page *::before, 
+.tt-signup-page *::after {
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
+}
+
+/* Step Indicator */
+.tt-step-indicator {
+  display: flex;
+  justify-content: center;
+  gap: 0.5rem;
+  margin-bottom: 2rem;
+}
+
+.tt-step-dot {
+  height: 0.5rem;
+  border-radius: 4px;
+  transition: all 0.3s ease;
+}
+
+.tt-step-dot.active {
+  width: 2rem;
+  background: var(--coral);
+}
+
+.tt-step-dot.completed {
+  width: 0.5rem;
+  background: var(--success);
+}
+
+.tt-step-dot.pending {
+  width: 0.5rem;
+  background: rgba(255,255,255,0.2);
+}
+
+/* Section Header */
+.tt-section-header {
+  text-align: center;
+  margin-bottom: 2rem;
+}
+
+.tt-section-tag {
+  color: var(--coral);
+  font-family: 'Space Mono', monospace;
+  font-size: 0.75rem;
+  letter-spacing: 2px;
+  display: block;
+  margin-bottom: 0.75rem;
+}
+
+.tt-section-title {
+  color: var(--white);
+  font-size: 1.75rem;
+  font-weight: 700;
+  margin: 0;
+}
+
+.tt-section-subtitle {
+  color: var(--gray);
+  margin-top: 0.5rem;
+}
+
+/* Plans Grid */
+.tt-plans-grid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 1.5rem;
+  max-width: 1000px;
+  margin: 0 auto;
+}
+
+@media (max-width: 768px) {
+  .tt-plans-grid {
+    grid-template-columns: 1fr;
+    max-width: 400px;
+  }
+}
+
+/* Plan Card */
+.tt-plan-card {
+  background: var(--dark-card);
+  border: 1px solid rgba(255,255,255,0.05);
+  border-radius: 20px;
+  padding: 1.5rem;
+  position: relative;
+  transition: all 0.4s ease;
+  cursor: pointer;
+}
+
+.tt-plan-card:hover {
+  transform: translateY(-5px);
+  border-color: rgba(199, 91, 75, 0.3);
+}
+
+.tt-plan-card.featured {
+  border-color: var(--coral);
+  background: linear-gradient(135deg, rgba(26, 26, 26, 0.95), rgba(199, 91, 75, 0.1));
+}
+
+.tt-plan-card.great-value {
+  border-color: var(--amber);
+  background: linear-gradient(135deg, rgba(26, 26, 26, 0.95), rgba(245, 158, 11, 0.1));
+}
+
+.tt-plan-card.selected {
+  box-shadow: 0 0 0 3px var(--coral);
+}
+
+.tt-plan-card.great-value.selected {
+  box-shadow: 0 0 0 3px var(--amber);
+}
+
+/* Plan Badge */
+.tt-plan-badge {
+  position: absolute;
+  top: -12px;
+  left: 50%;
+  transform: translateX(-50%);
+  font-size: 0.65rem;
+  font-weight: 700;
+  letter-spacing: 1px;
+  padding: 0.3rem 0.75rem;
+  border-radius: 20px;
+  white-space: nowrap;
+}
+
+.tt-plan-badge.popular {
+  background: var(--coral);
+  color: var(--white);
+}
+
+.tt-plan-badge.great-value {
+  background: var(--amber);
+  color: var(--dark);
+}
+
+/* Plan Content */
+.tt-plan-name {
+  color: var(--white);
+  font-size: 1.25rem;
+  font-weight: 700;
+  margin-bottom: 0.25rem;
+}
+
+.tt-plan-speed {
+  color: var(--coral);
+  font-family: 'Space Mono', monospace;
+  font-size: 0.8rem;
+  margin-bottom: 1rem;
+}
+
+.tt-plan-price {
+  display: flex;
+  align-items: baseline;
+  gap: 0.2rem;
+  margin-bottom: 1.25rem;
+}
+
+.tt-plan-price-currency {
+  font-size: 1rem;
+  font-weight: 600;
+  color: var(--gray);
+}
+
+.tt-plan-price-amount {
+  font-size: 2.5rem;
+  font-weight: 800;
+  line-height: 1;
+  color: var(--white);
+}
+
+.tt-plan-price-period {
+  font-size: 0.9rem;
+  color: var(--gray);
+}
+
+/* Plan Features */
+.tt-plan-features {
+  list-style: none;
+  margin-bottom: 1rem;
+  padding: 0;
+}
+
+.tt-plan-features li {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 0.4rem 0;
+  color: var(--gray-light);
+  font-size: 0.8rem;
+  border-bottom: 1px solid rgba(255,255,255,0.05);
+}
+
+.tt-plan-features li:last-child {
+  border-bottom: none;
+}
+
+.tt-plan-features li svg {
+  width: 16px;
+  height: 16px;
+  color: var(--success);
+  flex-shrink: 0;
+}
+
+/* Plan Total Box */
+.tt-plan-total {
+  background: rgba(42, 42, 42, 0.5);
+  border-radius: 10px;
+  padding: 0.875rem;
+  margin-bottom: 1rem;
+  border-top: 1px solid rgba(255,255,255,0.05);
+}
+
+.tt-plan-total-row {
+  display: flex;
+  justify-content: space-between;
+}
+
+.tt-plan-total-label {
+  color: var(--gray);
+  font-size: 0.85rem;
+}
+
+.tt-plan-total-value {
+  color: var(--white);
+  font-weight: 600;
+  font-size: 0.95rem;
+}
+
+/* Plan CTA Button */
+.tt-plan-cta {
+  display: block;
+  width: 100%;
+  padding: 0.75rem;
+  border-radius: 8px;
+  text-align: center;
+  font-weight: 600;
+  transition: all 0.3s ease;
+  cursor: pointer;
+  font-family: 'Outfit', sans-serif;
+  font-size: 0.9rem;
+  border: 2px solid var(--coral);
+  background: transparent;
+  color: var(--coral);
+}
+
+.tt-plan-cta:hover {
+  background: var(--coral);
+  color: var(--white);
+}
+
+.tt-plan-card.featured .tt-plan-cta {
+  background: var(--coral);
+  color: var(--white);
+  border-color: var(--coral);
+}
+
+.tt-plan-card.featured .tt-plan-cta:hover {
+  background: var(--coral-light);
+}
+
+.tt-plan-card.great-value .tt-plan-cta {
+  border-color: var(--amber);
+  color: var(--amber);
+  background: transparent;
+}
+
+.tt-plan-card.great-value .tt-plan-cta:hover {
+  background: var(--amber);
+  color: var(--dark);
+}
+
+.tt-plan-cta.selected {
+  background: var(--coral) !important;
+  color: var(--white) !important;
+}
+
+.tt-plan-card.great-value .tt-plan-cta.selected {
+  background: var(--amber) !important;
+  color: var(--dark) !important;
+}
+
+/* Plans Note */
+.tt-plans-note {
+  text-align: center;
+  color: var(--gray);
+  font-size: 0.8rem;
+  margin-top: 2rem;
+}
+
+/* Continue Button */
+.tt-continue-container {
+  text-align: center;
+  margin-top: 2rem;
+}
+
+/* Form Card */
+.tt-form-card {
+  background: var(--dark-card);
+  border-radius: 24px;
+  padding: 2rem;
+  border: 1px solid rgba(255,255,255,0.1);
+  max-width: 600px;
+  margin: 0 auto;
+}
+
+.tt-form-title {
+  font-size: 1.5rem;
+  font-weight: 700;
+  color: var(--white);
+  margin-bottom: 0.5rem;
+}
+
+.tt-form-subtitle {
+  color: var(--gray);
+  margin-bottom: 1.5rem;
+}
+
+/* Form Inputs */
+.tt-form-group {
+  margin-bottom: 1rem;
+}
+
+.tt-form-row {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 1rem;
+}
+
+@media (max-width: 600px) {
+  .tt-form-row {
+    grid-template-columns: 1fr;
+  }
+}
+
+.tt-form-label {
+  display: block;
+  color: var(--gray-light);
+  font-size: 0.875rem;
+  font-weight: 500;
+  margin-bottom: 0.5rem;
+}
+
+.tt-form-label-optional {
+  color: var(--gray);
+  font-weight: 400;
+}
+
+.tt-form-input,
+.tt-form-select {
+  width: 100%;
+  padding: 0.875rem 1rem;
+  background: rgba(42, 42, 42, 0.8);
+  border: 1px solid rgba(255,255,255,0.1);
+  border-radius: 12px;
+  color: var(--white);
+  font-size: 0.95rem;
+  font-family: 'Outfit', sans-serif;
+  outline: none;
+  transition: border-color 0.3s ease;
+}
+
+.tt-form-input:focus,
+.tt-form-select:focus {
+  border-color: var(--coral);
+}
+
+.tt-form-input::placeholder {
+  color: var(--gray);
+}
+
+.tt-form-select {
+  appearance: none;
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 12 12'%3E%3Cpath fill='%23888888' d='M6 8L1 3h10z'/%3E%3C/svg%3E");
+  background-repeat: no-repeat;
+  background-position: right 1rem center;
+  padding-right: 2.5rem;
+  cursor: pointer;
+}
+
+.tt-form-select option {
+  background: #1a1a1a;
+  color: var(--white);
+}
+
+.tt-form-hint {
+  font-size: 0.75rem;
+  color: var(--gray);
+  margin-top: 0.5rem;
+}
+
+/* Address Row */
+.tt-address-row {
+  display: flex;
+  gap: 0.75rem;
+}
+
+.tt-unit-input {
+  width: 100px;
+  flex-shrink: 0;
+  text-align: center;
+}
+
+/* Checkbox */
+.tt-checkbox-container {
+  margin-top: 1.5rem;
+  padding: 1rem;
+  background: rgba(42, 42, 42, 0.3);
+  border-radius: 12px;
+  border: 1px solid rgba(255,255,255,0.05);
+}
+
+.tt-checkbox-label {
+  display: flex;
+  align-items: flex-start;
+  gap: 0.75rem;
+  cursor: pointer;
+  color: var(--gray-light);
+}
+
+.tt-checkbox {
+  width: 20px;
+  height: 20px;
+  accent-color: var(--coral);
+  cursor: pointer;
+  margin-top: 2px;
+}
+
+.tt-checkbox-text {
+  font-weight: 500;
+  color: var(--white);
+}
+
+.tt-checkbox-hint {
+  font-size: 0.8rem;
+  color: var(--gray);
+  margin-top: 0.25rem;
+}
+
+/* Plan Summary Box */
+.tt-plan-summary {
+  margin-top: 1.5rem;
+  background: rgba(42, 42, 42, 0.5);
+  border-radius: 12px;
+  padding: 1.25rem;
+}
+
+.tt-plan-summary-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.tt-plan-summary-name {
+  font-size: 1.125rem;
+  font-weight: 700;
+  color: var(--white);
+}
+
+.tt-plan-summary-speed {
+  color: var(--gray);
+}
+
+.tt-plan-summary-price {
+  font-size: 1.5rem;
+  font-weight: 700;
+  color: var(--coral);
+}
+
+.tt-plan-summary-period {
+  color: var(--gray);
+  font-size: 0.875rem;
+}
+
+/* Buttons */
+.tt-btn {
+  padding: 1rem 2rem;
+  border-radius: 12px;
+  font-weight: 600;
+  cursor: pointer;
+  font-size: 1rem;
+  font-family: 'Outfit', sans-serif;
+  transition: all 0.3s ease;
+  border: none;
+}
+
+.tt-btn-primary {
+  background: var(--coral);
+  color: var(--white);
+}
+
+.tt-btn-primary:hover {
+  background: var(--coral-light);
+}
+
+.tt-btn-primary:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+.tt-btn-secondary {
+  background: transparent;
+  color: var(--gray-light);
+  border: 1px solid rgba(255,255,255,0.2);
+}
+
+.tt-btn-secondary:hover {
+  border-color: rgba(255,255,255,0.4);
+  color: var(--white);
+}
+
+.tt-btn-large {
+  padding: 1rem 3rem;
+  font-size: 1.1rem;
+}
+
+.tt-btn-row {
+  display: flex;
+  gap: 1rem;
+  margin-top: 1.5rem;
+}
+
+.tt-btn-row .tt-btn {
+  flex: 1;
+}
+
+/* Router Options */
+.tt-router-section h4 {
+  font-weight: 600;
+  color: var(--gray-light);
+  margin-bottom: 1rem;
+}
+
+.tt-router-options {
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+}
+
+.tt-router-option {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  padding: 1.25rem;
+  border: 2px solid rgba(255,255,255,0.1);
+  border-radius: 12px;
+  cursor: pointer;
+  background: transparent;
+  transition: all 0.3s ease;
+}
+
+.tt-router-option.selected {
+  border-color: var(--coral);
+  background: rgba(199, 91, 75, 0.1);
+}
+
+.tt-router-option input {
+  position: absolute;
+  opacity: 0;
+}
+
+.tt-router-option-title {
+  font-weight: 600;
+  color: var(--white);
+  margin-bottom: 0.5rem;
+}
+
+.tt-router-option-price {
+  font-size: 0.9rem;
+  font-weight: 500;
+}
+
+.tt-router-option-price.free {
+  color: var(--success);
+}
+
+.tt-router-option-price.paid {
+  color: var(--coral);
+}
+
+.tt-router-option-desc {
+  font-size: 0.85rem;
+  color: var(--gray);
+  margin-top: 0.25rem;
+}
+
+/* Pricing Summary */
+.tt-pricing-summary {
+  background: rgba(42, 42, 42, 0.5);
+  border-radius: 12px;
+  padding: 1.25rem;
+  margin-bottom: 1.5rem;
+}
+
+.tt-pricing-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.tt-pricing-label {
+  font-size: 0.875rem;
+  color: var(--gray);
+}
+
+.tt-pricing-value {
+  font-size: 1.5rem;
+  font-weight: 700;
+  color: var(--white);
+}
+
+.tt-pricing-value span {
+  font-size: 1rem;
+  font-weight: 400;
+  color: var(--gray);
+}
+
+.tt-pricing-detail {
+  font-size: 0.875rem;
+  color: var(--gray);
+  margin-top: 0.25rem;
+}
+
+.tt-pricing-onetime {
+  text-align: right;
+}
+
+.tt-pricing-onetime-value {
+  font-size: 1.25rem;
+  font-weight: 700;
+  color: var(--amber);
+}
+
+.tt-pricing-divider {
+  border-top: 1px solid rgba(255,255,255,0.1);
+  padding-top: 0.75rem;
+  margin-top: 0.75rem;
+}
+
+.tt-pricing-total {
+  display: flex;
+  justify-content: space-between;
+}
+
+.tt-pricing-total-label {
+  color: var(--gray-light);
+  font-weight: 600;
+}
+
+.tt-pricing-total-value {
+  color: var(--amber);
+  font-weight: 700;
+  font-size: 1.1rem;
+}
+
+/* Info Summary Boxes */
+.tt-info-box {
+  background: rgba(42, 42, 42, 0.5);
+  border-radius: 12px;
+  padding: 1.25rem;
+  margin-bottom: 1rem;
+}
+
+.tt-info-box-title {
+  font-weight: 600;
+  color: var(--white);
+  margin-bottom: 1rem;
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.tt-info-box-title svg {
+  width: 18px;
+  height: 18px;
+  color: var(--coral);
+}
+
+.tt-info-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 0.75rem;
+  font-size: 0.9rem;
+}
+
+.tt-info-grid-full {
+  grid-column: span 2;
+}
+
+.tt-info-label {
+  color: var(--gray);
+}
+
+.tt-info-value {
+  color: var(--white);
+}
+
+/* Disclaimer */
+.tt-disclaimer {
+  background: rgba(59, 130, 246, 0.1);
+  border: 1px solid rgba(59, 130, 246, 0.3);
+  border-radius: 12px;
+  padding: 1rem;
+  margin-bottom: 1.5rem;
+}
+
+.tt-disclaimer-content {
+  display: flex;
+  align-items: flex-start;
+  gap: 0.75rem;
+}
+
+.tt-disclaimer-icon {
+  width: 20px;
+  height: 20px;
+  color: var(--info);
+  flex-shrink: 0;
+  margin-top: 2px;
+}
+
+.tt-disclaimer-title {
+  color: #93C5FD;
+  font-size: 0.85rem;
+  font-weight: 500;
+  margin: 0;
+}
+
+.tt-disclaimer-text {
+  color: #64748B;
+  font-size: 0.8rem;
+  margin: 0.25rem 0 0 0;
+}
+
+/* Success Popup */
+.tt-popup-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: rgba(0, 0, 0, 0.85);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 10000;
+  padding: 1rem;
+}
+
+.tt-popup {
+  background: rgba(26, 26, 26, 0.98);
+  border-radius: 24px;
+  padding: 2.5rem;
+  max-width: 450px;
+  width: 100%;
+  border: 1px solid rgba(76, 175, 80, 0.3);
+  text-align: center;
+  animation: ttPopIn 0.3s ease-out;
+}
+
+@keyframes ttPopIn {
+  from {
+    opacity: 0;
+    transform: scale(0.9);
+  }
+  to {
+    opacity: 1;
+    transform: scale(1);
+  }
+}
+
+.tt-popup-icon {
+  width: 5rem;
+  height: 5rem;
+  background: var(--success);
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin: 0 auto 1.5rem;
+}
+
+.tt-popup-icon svg {
+  width: 2.5rem;
+  height: 2.5rem;
+  color: var(--white);
+}
+
+.tt-popup-title {
+  font-size: 1.75rem;
+  font-weight: 700;
+  color: var(--success);
+  margin-bottom: 0.75rem;
+}
+
+.tt-popup-message {
+  color: #81C784;
+  font-size: 1rem;
+  margin-bottom: 1rem;
+}
+
+.tt-popup-email {
+  color: var(--gray-light);
+  font-size: 0.9rem;
+  margin-bottom: 1.5rem;
+}
+
+.tt-popup-email strong {
+  color: var(--success);
+}
+
+.tt-popup-summary {
+  background: rgba(76, 175, 80, 0.1);
+  border-radius: 12px;
+  padding: 1rem;
+  margin-bottom: 1.5rem;
+}
+
+.tt-popup-plan {
+  color: var(--white);
+  font-weight: 600;
+  margin: 0 0 0.5rem 0;
+}
+
+.tt-popup-address {
+  color: var(--gray);
+  font-size: 0.85rem;
+  margin: 0;
+}
+
+.tt-popup-note {
+  color: var(--gray);
+  font-size: 0.8rem;
+  margin-bottom: 1.5rem;
+}
+
+/* PM Info Box */
+.tt-info-note {
+  margin-top: 1.5rem;
+  padding: 1rem;
+  background: rgba(59, 130, 246, 0.1);
+  border: 1px solid rgba(59, 130, 246, 0.2);
+  border-radius: 12px;
+}
+
+.tt-info-note p {
+  color: #93C5FD;
+  font-size: 0.85rem;
+  margin: 0;
+}
+
+/* Utility */
+.tt-hidden {
+  display: none !important;
+}
+
+.tt-text-center {
+  text-align: center;
+}
+</style>
+
+<!-- Signup Form Container -->
+<div class="tt-signup-page">
+  <div id="tt-signup-root"></div>
 </div>
 
-<!-- Signup Modal Container -->
-<div id="signup-modal-root"></div>
-
-<!-- React and Babel for the signup modal -->
+<!-- React and Babel -->
 <script src="https://unpkg.com/react@18/umd/react.production.min.js"></script>
 <script src="https://unpkg.com/react-dom@18/umd/react-dom.production.min.js"></script>
 <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
 
 <script type="text/babel">
-// Global function to open the signup modal
-window.openSignupModal = function(planId) {
-    window.selectedPlanId = planId;
-    window.renderSignupModal();
-};
+function TallTimbersSignup() {
+  const [step, setStep] = React.useState(1);
+  const [selectedPlan, setSelectedPlan] = React.useState(null);
+  const [hoveredPlan, setHoveredPlan] = React.useState(null);
+  const [showSuccessPopup, setShowSuccessPopup] = React.useState(false);
+  const [isSubmitting, setIsSubmitting] = React.useState(false);
+  const [formData, setFormData] = React.useState({
+    fullName: '',
+    unitNumber: '',
+    street: '',
+    email: '',
+    phone: '',
+    moveInDate: '',
+    doorCode: '',
+    hasPropertyManager: false,
+    pmName: '',
+    pmEmail: '',
+    pmPhone: '',
+    wantsRouter: false
+  });
 
-window.closeSignupModal = function() {
-    const root = ReactDOM.createRoot(document.getElementById('signup-modal-root'));
-    root.render(null);
-    document.body.style.overflow = '';
-};
+  const streets = [
+    "Tall Timbers Way",
+    "Campfire Pass",
+    "Ravine Roadway",
+    "Campfire Bend",
+    "Short Creek Trail",
+    "Back Woods Loop",
+    "Pig Trail",
+    "Ledgerock Bypass",
+    "High Tower Road",
+    "Meadow Song Way",
+    "Mark Twain Drive",
+    "Hillside Pass"
+  ];
 
-window.renderSignupModal = function() {
-    document.body.style.overflow = 'hidden';
-    const root = ReactDOM.createRoot(document.getElementById('signup-modal-root'));
-    root.render(<SignupModal initialPlan={window.selectedPlanId} onClose={window.closeSignupModal} />);
-};
+  const plans = [
+    {
+      id: "bronze",
+      name: "Bronze",
+      speed: 100,
+      speedDisplay: "100 Mbps",
+      price: 89.95,
+      priceWhole: "89",
+      priceDecimal: ".95/mo",
+      routerPrice: 55,
+      features: ["100 Mbps Download", "100 Mbps Upload", "Unlimited Data", "VIP Support", "Professional Install"],
+      badge: null,
+      cardClass: "default"
+    },
+    {
+      id: "silver",
+      name: "Silver",
+      speed: 300,
+      speedDisplay: "300 Mbps",
+      price: 104.95,
+      priceWhole: "104",
+      priceDecimal: ".95/mo",
+      routerPrice: 55,
+      features: ["300 Mbps Download", "300 Mbps Upload", "Unlimited Data", "VIP Support", "Professional Install"],
+      badge: "GREAT VALUE",
+      cardClass: "great-value"
+    },
+    {
+      id: "gold",
+      name: "Gold",
+      speed: 1000,
+      speedDisplay: "1 Gbps",
+      price: 114.95,
+      priceWhole: "114",
+      priceDecimal: ".95/mo",
+      routerPrice: 78,
+      features: ["1 Gbps Download", "1 Gbps Upload", "Unlimited Data", "VIP Support", "Professional Install"],
+      badge: "POPULAR",
+      cardClass: "featured"
+    }
+  ];
 
-function SignupModal({ initialPlan, onClose }) {
-    const [step, setStep] = React.useState(2);
-    const [orderSubmitted, setOrderSubmitted] = React.useState(false);
-    const [isSubmitting, setIsSubmitting] = React.useState(false);
-    const [submitResult, setSubmitResult] = React.useState(null);
+  const selected = plans.find(p => p.id === selectedPlan);
 
-    // Google Form Configuration - Tall Timbers
-    const GOOGLE_FORM_URL = 'https://docs.google.com/forms/d/e/1FAIpQLScp3FRO9DVY8PFwR5KwBr9zIV-uNumSRPpuGTrA5hGEZmW_7Q/formResponse';
-    const FORM_FIELDS = {
-        status: 'entry.849621258',
-        fullName: 'entry.2048927425',
-        address: 'entry.1708502792',
-        email: 'entry.1232180757',
-        phone: 'entry.1024742927',
-        moveInDate: 'entry.288052726',
-        doorCode: 'entry.916841599',
-        plan: 'entry.75256208',
-        routerInfo: 'entry.1674823951'
-    };
+  // Google Form Configuration - UPDATE THESE WITH YOUR FORM IDs
+  const GOOGLE_FORM_URL = 'https://docs.google.com/forms/d/e/YOUR_FORM_ID_HERE/formResponse';
+  const FORM_FIELDS = {
+    status: 'entry.XXXXXXXX',
+    fullName: 'entry.XXXXXXXX',
+    address: 'entry.XXXXXXXX',
+    email: 'entry.XXXXXXXX',
+    phone: 'entry.XXXXXXXX',
+    moveInDate: 'entry.XXXXXXXX',
+    doorCode: 'entry.XXXXXXXX',
+    plan: 'entry.XXXXXXXX',
+    routerInfo: 'entry.XXXXXXXX',
+    pmName: 'entry.XXXXXXXX',
+    pmEmail: 'entry.XXXXXXXX',
+    pmPhone: 'entry.XXXXXXXX'
+  };
 
-    const [formData, setFormData] = React.useState({
-        fullName: "",
-        address: "",
-        email: "",
-        phone: "",
-        moveInDate: "",
-        doorCode: "",
-        wantsRouter: false,
+  const handleInputChange = (e) => {
+    const { name, value, type, checked } = e.target;
+    
+    if (type === 'checkbox') {
+      setFormData(prev => ({ ...prev, [name]: checked }));
+      return;
+    }
+    
+    if (name === 'unitNumber') {
+      const numericValue = value.replace(/\D/g, '').slice(0, 4);
+      setFormData(prev => ({ ...prev, [name]: numericValue }));
+      return;
+    }
+    
+    setFormData(prev => ({ ...prev, [name]: value }));
+  };
+
+  const getFullAddress = () => {
+    if (formData.unitNumber && formData.street) {
+      return `${formData.unitNumber} ${formData.street}`;
+    }
+    return '';
+  };
+
+  const isFormValid = () => {
+    return formData.fullName && formData.unitNumber && formData.street && formData.email && formData.phone && formData.moveInDate;
+  };
+
+  const isPMFormValid = () => {
+    return formData.pmName && formData.pmEmail && formData.pmPhone;
+  };
+
+  const handleContinueFromStep2 = () => {
+    if (formData.hasPropertyManager) {
+      setStep(3);
+    } else {
+      setStep(4);
+    }
+  };
+
+  const handleBackFromRouterStep = () => {
+    if (formData.hasPropertyManager) {
+      setStep(3);
+    } else {
+      setStep(2);
+    }
+  };
+
+  const submitToGoogleForm = () => {
+    const planInfo = `${selected.name} - ${selected.speedDisplay} - $${selected.price.toFixed(2)}/mo`;
+    const routerInfo = formData.wantsRouter ? `Purchase ($${selected.routerPrice.toFixed(2)})` : 'BYOD';
+    
+    const formBody = new URLSearchParams();
+    formBody.append(FORM_FIELDS.status, 'NEW');
+    formBody.append(FORM_FIELDS.fullName, formData.fullName);
+    formBody.append(FORM_FIELDS.address, getFullAddress());
+    formBody.append(FORM_FIELDS.email, formData.email);
+    formBody.append(FORM_FIELDS.phone, formData.phone);
+    formBody.append(FORM_FIELDS.moveInDate, formData.moveInDate);
+    formBody.append(FORM_FIELDS.doorCode, formData.doorCode || '');
+    formBody.append(FORM_FIELDS.plan, planInfo);
+    formBody.append(FORM_FIELDS.routerInfo, routerInfo);
+    
+    if (formData.hasPropertyManager) {
+      formBody.append(FORM_FIELDS.pmName, formData.pmName);
+      formBody.append(FORM_FIELDS.pmEmail, formData.pmEmail);
+      formBody.append(FORM_FIELDS.pmPhone, formData.pmPhone);
+    }
+
+    // Create hidden iframe for submission
+    const iframe = document.createElement('iframe');
+    iframe.name = 'hidden_iframe';
+    iframe.style.display = 'none';
+    document.body.appendChild(iframe);
+
+    const form = document.createElement('form');
+    form.method = 'POST';
+    form.action = GOOGLE_FORM_URL;
+    form.target = 'hidden_iframe';
+
+    for (const [key, value] of formBody.entries()) {
+      const input = document.createElement('input');
+      input.type = 'hidden';
+      input.name = key;
+      input.value = value;
+      form.appendChild(input);
+    }
+
+    document.body.appendChild(form);
+    form.submit();
+
+    // Cleanup
+    setTimeout(() => {
+      document.body.removeChild(form);
+      document.body.removeChild(iframe);
+    }, 2000);
+  };
+
+  const handleSubmitForm = () => {
+    setIsSubmitting(true);
+    
+    // Submit to Google Form
+    submitToGoogleForm();
+    
+    // Show success popup after short delay
+    setTimeout(() => {
+      setIsSubmitting(false);
+      setShowSuccessPopup(true);
+    }, 1500);
+  };
+
+  const closePopupAndReset = () => {
+    setShowSuccessPopup(false);
+    setStep(1);
+    setSelectedPlan(null);
+    setFormData({
+      fullName: '',
+      unitNumber: '',
+      street: '',
+      email: '',
+      phone: '',
+      moveInDate: '',
+      doorCode: '',
+      hasPropertyManager: false,
+      pmName: '',
+      pmEmail: '',
+      pmPhone: '',
+      wantsRouter: false
     });
+  };
 
-    const plans = [
-        { id: "bronze", name: "Bronze", speed: "100", price: 89.95, features: ["100 Mbps Download", "100 Mbps Upload", "Unlimited Data", "24/7 VIP Support", "Professional Install"], routerPrice: 55 },
-        { id: "silver", name: "Silver", speed: "300", price: 104.95, features: ["300 Mbps Download", "300 Mbps Upload", "Unlimited Data", "24/7 VIP Support", "Professional Install"], routerPrice: 55 },
-        { id: "gold", name: "Gold", speed: "1000", price: 114.95, features: ["1 Gbps Download", "1 Gbps Upload", "Unlimited Data", "24/7 VIP Support", "Professional Install"], routerPrice: 78 },
-    ];
+  // Check Icon SVG
+  const CheckIcon = () => (
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+      <polyline points="20 6 9 17 4 12"></polyline>
+    </svg>
+  );
 
-    const selected = plans.find((p) => p.id === initialPlan);
-
-    const handleContinue = () => {
-        if (step === 2 && isFormValid()) setStep(3);
-        else if (step === 3) setStep(4);
-    };
-
-    const handleBack = () => {
-        if (step === 2) onClose();
-        else if (step > 2) setStep(step - 1);
-    };
-
-    const handleInputChange = (e) => {
-        const { name, value, type, checked } = e.target;
-        setFormData((prev) => ({ ...prev, [name]: type === "checkbox" ? checked : value }));
-    };
-
-    const isFormValid = () => formData.fullName && formData.address && formData.email && formData.phone && formData.moveInDate;
-
-    const getRouterInfoForSheet = () => formData.wantsRouter ? `Purchase ($${selected.routerPrice})` : 'BYOD';
-
-    const handleSubmitOrder = () => {
-        setIsSubmitting(true);
-        setSubmitResult(null);
-
-        const params = new URLSearchParams();
-        params.append(FORM_FIELDS.status, 'NEW');
-        params.append(FORM_FIELDS.fullName, formData.fullName);
-        params.append(FORM_FIELDS.address, formData.address);
-        params.append(FORM_FIELDS.email, formData.email);
-        params.append(FORM_FIELDS.phone, formData.phone);
-        params.append(FORM_FIELDS.moveInDate, formData.moveInDate);
-        params.append(FORM_FIELDS.doorCode, formData.doorCode || '');
-        params.append(FORM_FIELDS.plan, `${selected.name} - ${selected.speed} Mbps - $${selected.price.toFixed(2)}/mo`);
-        params.append(FORM_FIELDS.routerInfo, getRouterInfoForSheet());
-
-        const iframe = document.createElement('iframe');
-        iframe.name = 'hidden_iframe';
-        iframe.style.display = 'none';
-        document.body.appendChild(iframe);
-
-        const form = document.createElement('form');
-        form.method = 'POST';
-        form.action = GOOGLE_FORM_URL;
-        form.target = 'hidden_iframe';
-
-        params.forEach((value, key) => {
-            const input = document.createElement('input');
-            input.type = 'hidden';
-            input.name = key;
-            input.value = value;
-            form.appendChild(input);
-        });
-
-        document.body.appendChild(form);
-        form.submit();
-
-        setTimeout(() => {
-            document.body.removeChild(form);
-            document.body.removeChild(iframe);
-            setSubmitResult({ success: true, message: 'Signup submitted successfully' });
-            setOrderSubmitted(true);
-            setIsSubmitting(false);
-        }, 1500);
-    };
-
-    // Styles matching the dark theme
-    const cardStyle = { background: 'rgba(26, 26, 26, 0.98)', border: '1px solid rgba(255,255,255,0.1)', borderRadius: '20px', padding: '2rem', backdropFilter: 'blur(10px)' };
-    const inputStyle = { width: '100%', padding: '0.875rem 1rem', background: 'rgba(42, 42, 42, 0.8)', border: '2px solid rgba(255,255,255,0.1)', borderRadius: '12px', color: '#FFFFFF', fontSize: '1rem', fontFamily: 'Outfit, sans-serif', outline: 'none' };
-    const labelStyle = { display: 'block', fontSize: '0.9rem', fontWeight: '500', color: '#CCCCCC', marginBottom: '0.5rem' };
-    const primaryBtnStyle = { background: '#C75B4B', color: '#FFFFFF', padding: '1rem 2rem', borderRadius: '12px', border: 'none', fontSize: '1rem', fontWeight: '600', fontFamily: 'Outfit, sans-serif', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '0.5rem' };
-    const secondaryBtnStyle = { background: 'transparent', color: '#CCCCCC', padding: '1rem 2rem', borderRadius: '12px', border: '2px solid rgba(255,255,255,0.2)', fontSize: '1rem', fontWeight: '600', fontFamily: 'Outfit, sans-serif', cursor: 'pointer' };
-
-    const StepIndicator = ({ currentStep }) => (
-        <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '0.5rem', marginBottom: '2rem', flexWrap: 'wrap' }}>
-            {[{ num: 1, label: "Plan" }, { num: 2, label: "Info" }, { num: 3, label: "Options" }, { num: 4, label: "Confirm" }].map((s, idx) => (
-                <div key={s.num} style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
-                    {idx > 0 && <div style={{ width: '2rem', height: '2px', background: s.num <= currentStep ? '#C75B4B' : 'rgba(255,255,255,0.2)' }}></div>}
-                    <div style={{ width: '2rem', height: '2rem', borderRadius: '50%', display: 'flex', alignItems: 'center', justifyContent: 'center', fontWeight: '600', fontSize: '0.875rem', background: s.num <= currentStep ? '#C75B4B' : 'rgba(255,255,255,0.1)', color: s.num <= currentStep ? '#FFFFFF' : '#888888' }}>{s.num}</div>
-                </div>
-            ))}
-        </div>
-    );
-
-    if (!selected) return null;
-
-    // Step 4: Confirmation
-    if (step === 4) {
-        return (
-            <div className="signup-modal-overlay" onClick={onClose}>
-                <div className="signup-modal-container" onClick={(e) => e.stopPropagation()}>
-                    <button className="signup-modal-close" onClick={onClose}>×</button>
-                    <StepIndicator currentStep={4} />
-                    <div style={cardStyle}>
-                        <h2 style={{ fontSize: '1.5rem', fontWeight: '700', color: '#FFFFFF', marginBottom: '1.5rem', textAlign: 'center' }}>Order Confirmation</h2>
-
-                        <div style={{ marginBottom: '1.5rem', padding: '1.25rem', background: 'rgba(42, 42, 42, 0.5)', borderRadius: '12px' }}>
-                            <h4 style={{ fontWeight: '600', color: '#CCCCCC', marginBottom: '1rem' }}>Order Summary</h4>
-                            <div style={{ display: 'flex', flexDirection: 'column', gap: '0.5rem', fontSize: '0.9rem' }}>
-                                <div style={{ display: 'flex', justifyContent: 'space-between' }}><span style={{ color: '#888888' }}>Name:</span><span style={{ fontWeight: '500', color: '#FFFFFF' }}>{formData.fullName}</span></div>
-                                <div style={{ display: 'flex', justifyContent: 'space-between' }}><span style={{ color: '#888888' }}>Address:</span><span style={{ fontWeight: '500', color: '#FFFFFF' }}>{formData.address}</span></div>
-                                <div style={{ display: 'flex', justifyContent: 'space-between' }}><span style={{ color: '#888888' }}>Email:</span><span style={{ fontWeight: '500', color: '#FFFFFF' }}>{formData.email}</span></div>
-                                <div style={{ display: 'flex', justifyContent: 'space-between' }}><span style={{ color: '#888888' }}>Move-in Date:</span><span style={{ fontWeight: '500', color: '#FFFFFF' }}>{formData.moveInDate}</span></div>
-                                <div style={{ display: 'flex', justifyContent: 'space-between' }}><span style={{ color: '#888888' }}>Plan:</span><span style={{ fontWeight: '500', color: '#FFFFFF' }}>{selected.name} - {selected.speed} Mbps</span></div>
-                                <div style={{ display: 'flex', justifyContent: 'space-between' }}><span style={{ color: '#888888' }}>Router:</span><span style={{ fontWeight: '500', color: '#FFFFFF' }}>{formData.wantsRouter ? `Purchase ($${selected.routerPrice})` : "Bring Your Own"}</span></div>
-                            </div>
-                        </div>
-
-                        <div style={{ marginBottom: '1.5rem', borderTop: '1px solid rgba(255,255,255,0.1)', paddingTop: '1rem' }}>
-                            <h4 style={{ fontWeight: '600', color: '#CCCCCC', marginBottom: '0.75rem' }}>Pricing</h4>
-                            <div style={{ display: 'flex', flexDirection: 'column', gap: '0.5rem', fontSize: '0.9rem' }}>
-                                <div style={{ display: 'flex', justifyContent: 'space-between' }}><span style={{ color: '#CCCCCC' }}>{selected.name} Plan ({selected.speed} Mbps)</span><span>${selected.price.toFixed(2)}</span></div>
-                                <div style={{ display: 'flex', justifyContent: 'space-between', paddingTop: '0.75rem', borderTop: '1px solid rgba(255,255,255,0.1)', fontSize: '1.125rem', fontWeight: '700' }}><span>Monthly Total</span><span style={{ color: '#C75B4B' }}>${selected.price.toFixed(2)}/mo</span></div>
-                            </div>
-                            {formData.wantsRouter && (
-                                <div style={{ marginTop: '1rem', paddingTop: '1rem', borderTop: '1px solid rgba(255,255,255,0.1)' }}>
-                                    <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '0.9rem' }}><span style={{ color: '#CCCCCC' }}>Router Purchase</span><span>${selected.routerPrice.toFixed(2)}</span></div>
-                                    <div style={{ display: 'flex', justifyContent: 'space-between', paddingTop: '0.5rem', fontWeight: '700' }}><span>One-Time Total</span><span style={{ color: '#F59E0B' }}>${selected.routerPrice.toFixed(2)}</span></div>
-                                </div>
-                            )}
-                        </div>
-
-                        {!orderSubmitted ? (
-                            <div style={{ display: 'flex', gap: '1rem' }}>
-                                <button onClick={handleBack} disabled={isSubmitting} style={{ ...secondaryBtnStyle, flex: 1, opacity: isSubmitting ? 0.5 : 1 }}>← Back</button>
-                                <button onClick={handleSubmitOrder} disabled={isSubmitting} style={{ ...primaryBtnStyle, flex: 1, opacity: isSubmitting ? 0.7 : 1 }}>
-                                    {isSubmitting ? 'Submitting...' : 'Submit Order ✓'}
-                                </button>
-                            </div>
-                        ) : (
-                            <div style={{ display: 'flex', flexDirection: 'column', gap: '1rem' }}>
-                                <div style={{ background: 'rgba(76, 175, 80, 0.1)', border: '1px solid rgba(76, 175, 80, 0.3)', borderRadius: '16px', padding: '1.5rem', textAlign: 'center' }}>
-                                    <div style={{ width: '4rem', height: '4rem', background: '#4CAF50', borderRadius: '50%', display: 'flex', alignItems: 'center', justifyContent: 'center', margin: '0 auto 1rem' }}>
-                                        <svg style={{ width: '2rem', height: '2rem', color: '#FFFFFF' }} fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" /></svg>
-                                    </div>
-                                    <h3 style={{ fontSize: '1.25rem', fontWeight: '700', color: '#4CAF50' }}>Thank You!</h3>
-                                    <p style={{ color: '#81C784', marginTop: '0.5rem' }}>Your signup has been submitted successfully.</p>
-                                    <p style={{ color: '#81C784', fontSize: '0.875rem', marginTop: '0.5rem' }}>Confirmation email sent to <strong>{formData.email}</strong></p>
-                                </div>
-                                <button onClick={onClose} style={secondaryBtnStyle}>Close</button>
-                            </div>
-                        )}
-                    </div>
-                </div>
-            </div>
-        );
-    }
-
-    // Step 3: Options (Router)
-    if (step === 3) {
-        return (
-            <div className="signup-modal-overlay" onClick={onClose}>
-                <div className="signup-modal-container" onClick={(e) => e.stopPropagation()}>
-                    <button className="signup-modal-close" onClick={onClose}>×</button>
-                    <StepIndicator currentStep={3} />
-                    <div style={cardStyle}>
-                        <h2 style={{ fontSize: '1.5rem', fontWeight: '700', color: '#FFFFFF', marginBottom: '0.5rem' }}>Service Options</h2>
-                        <p style={{ color: '#888888', marginBottom: '1.5rem' }}>Choose your router option</p>
-
-                        <div style={{ marginBottom: '1.5rem' }}>
-                            <h4 style={{ fontWeight: '600', color: '#CCCCCC', marginBottom: '1rem' }}>Router Option</h4>
-                            <div style={{ display: 'flex', flexDirection: 'column', gap: '1rem' }}>
-                                <label style={{ position: 'relative', display: 'flex', flexDirection: 'column', padding: '1.25rem', border: `2px solid ${!formData.wantsRouter ? '#C75B4B' : 'rgba(255,255,255,0.1)'}`, borderRadius: '12px', cursor: 'pointer', background: !formData.wantsRouter ? 'rgba(199, 91, 75, 0.1)' : 'transparent' }}>
-                                    <input type="radio" name="wantsRouter" checked={!formData.wantsRouter} onChange={() => setFormData(prev => ({ ...prev, wantsRouter: false }))} style={{ position: 'absolute', opacity: 0 }} />
-                                    <span style={{ fontWeight: '600', color: '#FFFFFF', marginBottom: '0.5rem' }}>Bring Your Own Device</span>
-                                    <span style={{ fontSize: '0.9rem', color: '#4CAF50', fontWeight: '500' }}>No charge</span>
-                                    <span style={{ fontSize: '0.85rem', color: '#888888', marginTop: '0.25rem' }}>Use your own compatible router</span>
-                                </label>
-
-                                <label style={{ position: 'relative', display: 'flex', flexDirection: 'column', padding: '1.25rem', border: `2px solid ${formData.wantsRouter ? '#C75B4B' : 'rgba(255,255,255,0.1)'}`, borderRadius: '12px', cursor: 'pointer', background: formData.wantsRouter ? 'rgba(199, 91, 75, 0.1)' : 'transparent' }}>
-                                    <input type="radio" name="wantsRouter" checked={formData.wantsRouter} onChange={() => setFormData(prev => ({ ...prev, wantsRouter: true }))} style={{ position: 'absolute', opacity: 0 }} />
-                                    <span style={{ fontWeight: '600', color: '#FFFFFF', marginBottom: '0.5rem' }}>Purchase Router</span>
-                                    <span style={{ fontSize: '0.9rem', color: '#C75B4B', fontWeight: '500' }}>${selected.routerPrice.toFixed(2)} one-time</span>
-                                    <span style={{ fontSize: '0.85rem', color: '#888888', marginTop: '0.25rem' }}>High-performance Wi-Fi router optimized for your plan</span>
-                                </label>
-                            </div>
-                        </div>
-
-                        <div style={{ background: 'rgba(42, 42, 42, 0.5)', borderRadius: '12px', padding: '1.25rem', marginBottom: '1.5rem' }}>
-                            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-                                <div>
-                                    <div style={{ fontSize: '0.875rem', color: '#888888' }}>Monthly Total</div>
-                                    <div style={{ fontSize: '1.5rem', fontWeight: '700', color: '#FFFFFF' }}>${selected.price.toFixed(2)}<span style={{ fontSize: '1rem', fontWeight: '400', color: '#888888' }}>/mo</span></div>
-                                    <div style={{ fontSize: '0.875rem', color: '#888888', marginTop: '0.25rem' }}>{selected.name} plan ({selected.speed} Mbps)</div>
-                                </div>
-                                {formData.wantsRouter && (
-                                    <div style={{ textAlign: 'right' }}>
-                                        <div style={{ fontSize: '0.875rem', color: '#888888' }}>One-Time</div>
-                                        <div style={{ fontSize: '1.25rem', fontWeight: '700', color: '#F59E0B' }}>${selected.routerPrice.toFixed(2)}</div>
-                                    </div>
-                                )}
-                            </div>
-                        </div>
-
-                        <div style={{ display: 'flex', gap: '1rem' }}>
-                            <button onClick={handleBack} style={{ ...secondaryBtnStyle, flex: 1 }}>← Back</button>
-                            <button onClick={handleContinue} style={{ ...primaryBtnStyle, flex: 1 }}>Review Order →</button>
-                        </div>
-                    </div>
-                </div>
-            </div>
-        );
-    }
-
-    // Step 2: Customer Information
+  // Step Indicator
+  const StepIndicator = ({ currentStep }) => {
+    const totalSteps = formData.hasPropertyManager ? 5 : 4;
+    const displayStep = formData.hasPropertyManager ? currentStep : (currentStep > 2 ? currentStep - 1 : currentStep);
+    
     return (
-        <div className="signup-modal-overlay" onClick={onClose}>
-            <div className="signup-modal-container" onClick={(e) => e.stopPropagation()}>
-                <button className="signup-modal-close" onClick={onClose}>×</button>
-                <StepIndicator currentStep={2} />
-                <div style={cardStyle}>
-                    <h2 style={{ fontSize: '1.5rem', fontWeight: '700', color: '#FFFFFF', marginBottom: '0.5rem' }}>Customer Information</h2>
-                    <p style={{ color: '#888888', marginBottom: '1.5rem' }}>Tell us about yourself</p>
-
-                    <div style={{ display: 'flex', flexDirection: 'column', gap: '1rem' }}>
-                        <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '1rem' }}>
-                            <div>
-                                <label style={labelStyle}>Full Name *</label>
-                                <input type="text" name="fullName" value={formData.fullName} onChange={handleInputChange} style={inputStyle} placeholder="John Smith" />
-                            </div>
-                            <div>
-                                <label style={labelStyle}>Address *</label>
-                                <input type="text" name="address" value={formData.address} onChange={handleInputChange} style={inputStyle} placeholder="123 Tall Timbers Dr, Unit 101" />
-                            </div>
-                        </div>
-
-                        <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '1rem' }}>
-                            <div>
-                                <label style={labelStyle}>Email Address *</label>
-                                <input type="email" name="email" value={formData.email} onChange={handleInputChange} style={inputStyle} placeholder="your@email.com" />
-                            </div>
-                            <div>
-                                <label style={labelStyle}>Phone Number *</label>
-                                <input type="tel" name="phone" value={formData.phone} onChange={handleInputChange} style={inputStyle} placeholder="(555) 123-4567" />
-                            </div>
-                        </div>
-
-                        <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '1rem' }}>
-                            <div>
-                                <label style={labelStyle}>Move-in Date *</label>
-                                <input type="date" name="moveInDate" value={formData.moveInDate} onChange={handleInputChange} style={inputStyle} />
-                            </div>
-                            <div>
-                                <label style={labelStyle}>Door Code <span style={{ color: '#888888', fontWeight: '400' }}>(Optional)</span></label>
-                                <input type="text" name="doorCode" value={formData.doorCode} onChange={handleInputChange} style={inputStyle} placeholder="e.g. 1234" />
-                                <p style={{ fontSize: '0.75rem', color: '#888888', marginTop: '0.5rem' }}>Providing your door code helps us complete your installation faster.</p>
-                            </div>
-                        </div>
-                    </div>
-
-                    <div style={{ marginTop: '1.5rem', background: 'rgba(42, 42, 42, 0.5)', borderRadius: '12px', padding: '1.25rem' }}>
-                        <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
-                            <div>
-                                <div style={{ fontSize: '1.125rem', fontWeight: '700', color: '#FFFFFF' }}>{selected.name} Plan</div>
-                                <div style={{ color: '#888888' }}>{selected.speed} Mbps</div>
-                            </div>
-                            <div style={{ textAlign: 'right' }}>
-                                <div style={{ fontSize: '1.5rem', fontWeight: '700', color: '#C75B4B' }}>${selected.price.toFixed(2)}</div>
-                                <div style={{ color: '#888888', fontSize: '0.875rem' }}>/month</div>
-                            </div>
-                        </div>
-                    </div>
-
-                    <div style={{ display: 'flex', gap: '1rem', marginTop: '1.5rem' }}>
-                        <button onClick={handleBack} style={{ ...secondaryBtnStyle, flex: 1 }}>← Back</button>
-                        <button onClick={handleContinue} disabled={!isFormValid()} style={{ ...primaryBtnStyle, flex: 1, opacity: isFormValid() ? 1 : 0.5, cursor: isFormValid() ? 'pointer' : 'not-allowed' }}>Continue →</button>
-                    </div>
-                </div>
-            </div>
-        </div>
+      <div className="tt-step-indicator">
+        {Array.from({ length: totalSteps }, (_, i) => i + 1).map(s => (
+          <div
+            key={s}
+            className={`tt-step-dot ${s === displayStep ? 'active' : s < displayStep ? 'completed' : 'pending'}`}
+          />
+        ))}
+      </div>
     );
+  };
+
+  // Success Popup
+  const SuccessPopup = () => (
+    <div className="tt-popup-overlay">
+      <div className="tt-popup">
+        <div className="tt-popup-icon">
+          <svg fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
+          </svg>
+        </div>
+        <h3 className="tt-popup-title">Form Submitted!</h3>
+        <p className="tt-popup-message">Thank you for signing up for Tall Timbers Internet Service.</p>
+        <p className="tt-popup-email">A confirmation email has been sent to:<br /><strong>{formData.email}</strong></p>
+        <div className="tt-popup-summary">
+          <p className="tt-popup-plan">{selected?.name} Plan • {selected?.speedDisplay}</p>
+          <p className="tt-popup-address">{getFullAddress()}</p>
+        </div>
+        <p className="tt-popup-note">Our team will contact you shortly to schedule your installation.</p>
+        <button onClick={closePopupAndReset} className="tt-btn tt-btn-primary" style={{ width: '100%' }}>
+          Close
+        </button>
+      </div>
+    </div>
+  );
+
+  // STEP 1: Plan Selection
+  if (step === 1) {
+    return (
+      <div>
+        <StepIndicator currentStep={1} />
+        
+        <div className="tt-section-header">
+          <span className="tt-section-tag">// STEP 1: CHOOSE YOUR SPEED</span>
+          <h2 className="tt-section-title">Select Your Plan</h2>
+          <p className="tt-section-subtitle">Choose the internet speed that fits your needs</p>
+        </div>
+
+        <div className="tt-plans-grid">
+          {plans.map((plan) => (
+            <div
+              key={plan.id}
+              className={`tt-plan-card ${plan.cardClass} ${selectedPlan === plan.id ? 'selected' : ''}`}
+              onClick={() => setSelectedPlan(plan.id)}
+              onMouseEnter={() => setHoveredPlan(plan.id)}
+              onMouseLeave={() => setHoveredPlan(null)}
+            >
+              {plan.badge && (
+                <div className={`tt-plan-badge ${plan.cardClass === 'featured' ? 'popular' : 'great-value'}`}>
+                  {plan.badge}
+                </div>
+              )}
+              <h3 className="tt-plan-name" style={{ marginTop: plan.badge ? '0.5rem' : 0 }}>{plan.name}</h3>
+              <p className="tt-plan-speed">{plan.speedDisplay}</p>
+              <div className="tt-plan-price">
+                <span className="tt-plan-price-currency">$</span>
+                <span className="tt-plan-price-amount">{plan.priceWhole}</span>
+                <span className="tt-plan-price-period">{plan.priceDecimal}</span>
+              </div>
+              <ul className="tt-plan-features">
+                {plan.features.map((feature, idx) => (
+                  <li key={idx}>
+                    <CheckIcon />
+                    {feature}
+                  </li>
+                ))}
+              </ul>
+              <div className="tt-plan-total">
+                <div className="tt-plan-total-row">
+                  <span className="tt-plan-total-label">Monthly Total:</span>
+                  <span className="tt-plan-total-value">${plan.price.toFixed(2)}</span>
+                </div>
+              </div>
+              <button className={`tt-plan-cta ${selectedPlan === plan.id ? 'selected' : ''}`}>
+                {selectedPlan === plan.id ? '✓ Selected' : 'Select Plan'}
+              </button>
+            </div>
+          ))}
+        </div>
+
+        <p className="tt-plans-note">All plans include unlimited data • No hidden fees • 30-day money-back guarantee</p>
+
+        {selectedPlan && (
+          <div className="tt-continue-container">
+            <button onClick={() => setStep(2)} className="tt-btn tt-btn-primary tt-btn-large">
+              Continue to Customer Info →
+            </button>
+          </div>
+        )}
+      </div>
+    );
+  }
+
+  // STEP 2: Customer Information
+  if (step === 2) {
+    return (
+      <div>
+        <StepIndicator currentStep={2} />
+        
+        <div className="tt-form-card">
+          <h2 className="tt-form-title">Customer Information</h2>
+          <p className="tt-form-subtitle">Tell us about yourself</p>
+
+          <div className="tt-form-group">
+            <label className="tt-form-label">Full Name *</label>
+            <input 
+              type="text" 
+              name="fullName" 
+              value={formData.fullName} 
+              onChange={handleInputChange} 
+              className="tt-form-input" 
+              placeholder="John Smith" 
+            />
+          </div>
+
+          <div className="tt-form-group">
+            <label className="tt-form-label">Address *</label>
+            <div className="tt-address-row">
+              <input 
+                type="text" 
+                name="unitNumber" 
+                value={formData.unitNumber} 
+                onChange={handleInputChange} 
+                className="tt-form-input tt-unit-input" 
+                placeholder="Unit #" 
+                maxLength={4}
+              />
+              <select 
+                name="street" 
+                value={formData.street} 
+                onChange={handleInputChange} 
+                className="tt-form-select"
+              >
+                <option value="">Select Street...</option>
+                {streets.map((street, idx) => (
+                  <option key={idx} value={street}>{street}</option>
+                ))}
+              </select>
+            </div>
+          </div>
+
+          <div className="tt-form-row">
+            <div className="tt-form-group">
+              <label className="tt-form-label">Email Address *</label>
+              <input 
+                type="email" 
+                name="email" 
+                value={formData.email} 
+                onChange={handleInputChange} 
+                className="tt-form-input" 
+                placeholder="your@email.com" 
+              />
+            </div>
+            <div className="tt-form-group">
+              <label className="tt-form-label">Phone Number *</label>
+              <input 
+                type="tel" 
+                name="phone" 
+                value={formData.phone} 
+                onChange={handleInputChange} 
+                className="tt-form-input" 
+                placeholder="(555) 123-4567" 
+              />
+            </div>
+          </div>
+
+          <div className="tt-form-row">
+            <div className="tt-form-group">
+              <label className="tt-form-label">Move-in Date *</label>
+              <input 
+                type="date" 
+                name="moveInDate" 
+                value={formData.moveInDate} 
+                onChange={handleInputChange} 
+                className="tt-form-input" 
+              />
+            </div>
+            <div className="tt-form-group">
+              <label className="tt-form-label">Door Code <span className="tt-form-label-optional">(Optional)</span></label>
+              <input 
+                type="text" 
+                name="doorCode" 
+                value={formData.doorCode} 
+                onChange={handleInputChange} 
+                className="tt-form-input" 
+                placeholder="e.g. 1234" 
+              />
+              <p className="tt-form-hint">Providing your door code helps us complete your installation faster.</p>
+            </div>
+          </div>
+
+          <div className="tt-checkbox-container">
+            <label className="tt-checkbox-label">
+              <input 
+                type="checkbox" 
+                name="hasPropertyManager"
+                checked={formData.hasPropertyManager}
+                onChange={handleInputChange}
+                className="tt-checkbox"
+              />
+              <div>
+                <span className="tt-checkbox-text">I have a property manager</span>
+                <p className="tt-checkbox-hint">Optional - Check this if you'd like us to contact your property manager</p>
+              </div>
+            </label>
+          </div>
+
+          <div className="tt-plan-summary">
+            <div className="tt-plan-summary-row">
+              <div>
+                <div className="tt-plan-summary-name">{selected?.name} Plan</div>
+                <div className="tt-plan-summary-speed">{selected?.speedDisplay}</div>
+              </div>
+              <div style={{ textAlign: 'right' }}>
+                <div className="tt-plan-summary-price">${selected?.price.toFixed(2)}</div>
+                <div className="tt-plan-summary-period">/month</div>
+              </div>
+            </div>
+          </div>
+
+          <div className="tt-btn-row">
+            <button onClick={() => setStep(1)} className="tt-btn tt-btn-secondary">← Back</button>
+            <button 
+              onClick={handleContinueFromStep2} 
+              disabled={!isFormValid()} 
+              className="tt-btn tt-btn-primary"
+            >
+              Continue →
+            </button>
+          </div>
+        </div>
+      </div>
+    );
+  }
+
+  // STEP 3: Property Manager Information
+  if (step === 3 && formData.hasPropertyManager) {
+    return (
+      <div>
+        <StepIndicator currentStep={3} />
+        
+        <div className="tt-form-card">
+          <h2 className="tt-form-title">Property Manager Information</h2>
+          <p className="tt-form-subtitle">Provide your property manager's contact details</p>
+
+          <div className="tt-form-group">
+            <label className="tt-form-label">Property Manager Name *</label>
+            <input 
+              type="text" 
+              name="pmName" 
+              value={formData.pmName} 
+              onChange={handleInputChange} 
+              className="tt-form-input" 
+              placeholder="Jane Doe" 
+            />
+          </div>
+
+          <div className="tt-form-group">
+            <label className="tt-form-label">Property Manager Email *</label>
+            <input 
+              type="email" 
+              name="pmEmail" 
+              value={formData.pmEmail} 
+              onChange={handleInputChange} 
+              className="tt-form-input" 
+              placeholder="manager@property.com" 
+            />
+          </div>
+
+          <div className="tt-form-group">
+            <label className="tt-form-label">Property Manager Phone *</label>
+            <input 
+              type="tel" 
+              name="pmPhone" 
+              value={formData.pmPhone} 
+              onChange={handleInputChange} 
+              className="tt-form-input" 
+              placeholder="(555) 987-6543" 
+            />
+          </div>
+
+          <div className="tt-info-note">
+            <p><strong>Why we ask:</strong> We may contact your property manager to coordinate installation access or verify property details.</p>
+          </div>
+
+          <div className="tt-btn-row">
+            <button onClick={() => setStep(2)} className="tt-btn tt-btn-secondary">← Back</button>
+            <button 
+              onClick={() => setStep(4)} 
+              disabled={!isPMFormValid()} 
+              className="tt-btn tt-btn-primary"
+            >
+              Continue →
+            </button>
+          </div>
+        </div>
+      </div>
+    );
+  }
+
+  // STEP 4: Router Options
+  if (step === 4) {
+    return (
+      <div>
+        <StepIndicator currentStep={formData.hasPropertyManager ? 4 : 3} />
+        
+        <div className="tt-form-card">
+          <h2 className="tt-form-title">Service Options</h2>
+          <p className="tt-form-subtitle">Choose your router option</p>
+
+          <div className="tt-router-section">
+            <h4>Router Option</h4>
+            <div className="tt-router-options">
+              <label 
+                className={`tt-router-option ${!formData.wantsRouter ? 'selected' : ''}`}
+                onClick={() => setFormData(prev => ({ ...prev, wantsRouter: false }))}
+              >
+                <input type="radio" name="wantsRouter" checked={!formData.wantsRouter} onChange={() => {}} />
+                <span className="tt-router-option-title">Bring Your Own Device</span>
+                <span className="tt-router-option-price free">No charge</span>
+                <span className="tt-router-option-desc">Use your own compatible router</span>
+              </label>
+
+              <label 
+                className={`tt-router-option ${formData.wantsRouter ? 'selected' : ''}`}
+                onClick={() => setFormData(prev => ({ ...prev, wantsRouter: true }))}
+              >
+                <input type="radio" name="wantsRouter" checked={formData.wantsRouter} onChange={() => {}} />
+                <span className="tt-router-option-title">Purchase Router</span>
+                <span className="tt-router-option-price paid">${selected?.routerPrice.toFixed(2)} one-time</span>
+                <span className="tt-router-option-desc">High-performance Wi-Fi router optimized for your plan</span>
+              </label>
+            </div>
+          </div>
+
+          <div className="tt-pricing-summary" style={{ marginTop: '1.5rem' }}>
+            <div className="tt-pricing-row">
+              <div>
+                <div className="tt-pricing-label">Monthly Total</div>
+                <div className="tt-pricing-value">${selected?.price.toFixed(2)}<span>/mo</span></div>
+                <div className="tt-pricing-detail">{selected?.name} plan ({selected?.speedDisplay})</div>
+              </div>
+              {formData.wantsRouter && (
+                <div className="tt-pricing-onetime">
+                  <div className="tt-pricing-label">Router (One-Time)</div>
+                  <div className="tt-pricing-onetime-value">${selected?.routerPrice.toFixed(2)}</div>
+                </div>
+              )}
+            </div>
+            <div className="tt-pricing-divider">
+              <div className="tt-pricing-total">
+                <span className="tt-pricing-total-label">First Month Total:</span>
+                <span className="tt-pricing-total-value">
+                  ${(selected?.price + (formData.wantsRouter ? selected?.routerPrice : 0)).toFixed(2)}
+                </span>
+              </div>
+            </div>
+          </div>
+
+          <div className="tt-btn-row">
+            <button onClick={handleBackFromRouterStep} className="tt-btn tt-btn-secondary">← Back</button>
+            <button onClick={() => setStep(5)} className="tt-btn tt-btn-primary">Review Details →</button>
+          </div>
+        </div>
+      </div>
+    );
+  }
+
+  // STEP 5: Service Confirmation
+  if (step === 5) {
+    return (
+      <div>
+        {showSuccessPopup && <SuccessPopup />}
+        
+        <StepIndicator currentStep={formData.hasPropertyManager ? 5 : 4} />
+        
+        <div className="tt-form-card">
+          <h2 className="tt-form-title">Service Confirmation</h2>
+          <p className="tt-form-subtitle">Please confirm your information</p>
+
+          <div className="tt-info-box">
+            <h4 className="tt-info-box-title">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"></path><circle cx="12" cy="7" r="4"></circle></svg>
+              Customer Information
+            </h4>
+            <div className="tt-info-grid">
+              <div><span className="tt-info-label">Name:</span> <span className="tt-info-value">{formData.fullName}</span></div>
+              <div><span className="tt-info-label">Email:</span> <span className="tt-info-value">{formData.email}</span></div>
+              <div><span className="tt-info-label">Phone:</span> <span className="tt-info-value">{formData.phone}</span></div>
+              <div><span className="tt-info-label">Move-in:</span> <span className="tt-info-value">{formData.moveInDate}</span></div>
+              <div className="tt-info-grid-full"><span className="tt-info-label">Address:</span> <span className="tt-info-value">{getFullAddress()}</span></div>
+              {formData.doorCode && <div className="tt-info-grid-full"><span className="tt-info-label">Door Code:</span> <span className="tt-info-value">{formData.doorCode}</span></div>}
+            </div>
+          </div>
+
+          {formData.hasPropertyManager && (
+            <div className="tt-info-box">
+              <h4 className="tt-info-box-title">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M16 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"></path><circle cx="8.5" cy="7" r="4"></circle><line x1="20" y1="8" x2="20" y2="14"></line><line x1="23" y1="11" x2="17" y2="11"></line></svg>
+                Property Manager
+              </h4>
+              <div className="tt-info-grid">
+                <div><span className="tt-info-label">Name:</span> <span className="tt-info-value">{formData.pmName}</span></div>
+                <div><span className="tt-info-label">Email:</span> <span className="tt-info-value">{formData.pmEmail}</span></div>
+                <div className="tt-info-grid-full"><span className="tt-info-label">Phone:</span> <span className="tt-info-value">{formData.pmPhone}</span></div>
+              </div>
+            </div>
+          )}
+
+          <div className="tt-info-box">
+            <h4 className="tt-info-box-title">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M22 12h-4l-3 9L9 3l-3 9H2"></path></svg>
+              Plan Details
+            </h4>
+            <div style={{ fontSize: '0.9rem' }}>
+              <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '0.5rem' }}>
+                <span className="tt-info-label">{selected?.name} Plan ({selected?.speedDisplay})</span>
+                <span className="tt-info-value">${selected?.price.toFixed(2)}/mo</span>
+              </div>
+              <div style={{ display: 'flex', justifyContent: 'space-between' }}>
+                <span className="tt-info-label">Router</span>
+                <span className="tt-info-value">{formData.wantsRouter ? `Purchase ($${selected?.routerPrice.toFixed(2)})` : 'BYOD (No charge)'}</span>
+              </div>
+              <div style={{ marginTop: '1rem', paddingTop: '1rem', borderTop: '1px solid rgba(255,255,255,0.1)' }}>
+                <div style={{ display: 'flex', justifyContent: 'space-between', fontWeight: '700', marginBottom: '0.5rem' }}>
+                  <span style={{ color: '#FFFFFF' }}>Monthly Total</span>
+                  <span style={{ color: '#C75B4B' }}>${selected?.price.toFixed(2)}/mo</span>
+                </div>
+                <div style={{ display: 'flex', justifyContent: 'space-between', fontWeight: '700' }}>
+                  <span style={{ color: '#FFFFFF' }}>First Month Total</span>
+                  <span style={{ color: '#F59E0B' }}>${(selected?.price + (formData.wantsRouter ? selected?.routerPrice : 0)).toFixed(2)}</span>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <div className="tt-disclaimer">
+            <div className="tt-disclaimer-content">
+              <svg className="tt-disclaimer-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                <circle cx="12" cy="12" r="10"></circle>
+                <line x1="12" y1="16" x2="12" y2="12"></line>
+                <line x1="12" y1="8" x2="12.01" y2="8"></line>
+              </svg>
+              <div>
+                <p className="tt-disclaimer-title">No payment required now</p>
+                <p className="tt-disclaimer-text">This form is for service signup only. Payment information will be collected separately after your installation is scheduled. You will not be charged by submitting this form.</p>
+              </div>
+            </div>
+          </div>
+
+          <div className="tt-btn-row">
+            <button onClick={() => setStep(4)} className="tt-btn tt-btn-secondary">← Back</button>
+            <button 
+              onClick={handleSubmitForm} 
+              disabled={isSubmitting}
+              className="tt-btn tt-btn-primary"
+              style={{ opacity: isSubmitting ? 0.7 : 1 }}
+            >
+              {isSubmitting ? 'Submitting...' : 'Submit Form ✓'}
+            </button>
+          </div>
+        </div>
+      </div>
+    );
+  }
+
+  return null;
 }
+
+// Render the app
+const root = ReactDOM.createRoot(document.getElementById('tt-signup-root'));
+root.render(<TallTimbersSignup />);
 </script>
-</body>
-</html>
